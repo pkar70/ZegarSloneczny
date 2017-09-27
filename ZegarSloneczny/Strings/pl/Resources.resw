@@ -1,0 +1,207 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="resDigits.Text" xml:space="preserve">
+    <value>Numeracja</value>
+  </data>
+  <data name="resDigModR.Content" xml:space="preserve">
+    <value>współczesna rzymska (iv)</value>
+  </data>
+  <data name="resDigRom.Content" xml:space="preserve">
+    <value>rzymska (iiii)</value>
+  </data>
+  <data name="resDigWest.Content" xml:space="preserve">
+    <value>zachodnia (4)</value>
+  </data>
+  <data name="resGetGPS.Content" xml:space="preserve">
+    <value>Odczytaj z GPS</value>
+  </data>
+  <data name="resLat.Text" xml:space="preserve">
+    <value>szerokość</value>
+  </data>
+  <data name="resLocation.Text" xml:space="preserve">
+    <value>Współrzędne geograficzne</value>
+  </data>
+  <data name="resLong.Text" xml:space="preserve">
+    <value>długość</value>
+  </data>
+  <data name="resOrHor.Content" xml:space="preserve">
+    <value>pozioma</value>
+  </data>
+  <data name="resOrientation.Text" xml:space="preserve">
+    <value>Orientacja</value>
+  </data>
+  <data name="resOrVert.Content" xml:space="preserve">
+    <value>pionowa</value>
+  </data>
+  <data name="resSettings.Text" xml:space="preserve">
+    <value>Ustawienia</value>
+  </data>
+  <data name="resOrInfo" xml:space="preserve">
+    <value>słoneczny zegar ścienny "chodzi" w przeciwną stronę niż zegar ułożony poziomo</value>
+  </data>
+  <data name="resTyp.Text" xml:space="preserve">
+    <value>Świt</value>
+  </data>
+  <data name="resTypAstro.Content" xml:space="preserve">
+    <value>astronomiczny</value>
+  </data>
+  <data name="resTypCivil.Content" xml:space="preserve">
+    <value>cywilny</value>
+  </data>
+  <data name="resTypExact.Content" xml:space="preserve">
+    <value>bez</value>
+  </data>
+  <data name="resTypInfo.Text" xml:space="preserve">
+    <value>typ świtu (i zmierzchu)</value>
+  </data>
+  <data name="resTypMare.Content" xml:space="preserve">
+    <value>morski (żeglarski)</value>
+  </data>
+  <data name="resAboutTitle.Text" xml:space="preserve">
+    <value>Info...</value>
+  </data>
+  <data name="resAboutApp.Text" xml:space="preserve">
+    <value>  Jest to bardzo prosty zegar słoneczny, posługujący się "archaicznym" czasem słonecznym, w którym dzień podzielony jest na 12 godzin, liczonych od wschodu do zachodu Słońca. Tak liczono czas np. w czasach Chrystusa.</value>
+  </data>
+  <data name="resAboutDusk.Text" xml:space="preserve">
+    <value>  Standardowo czas liczony jest od wschodu do zachodu Słońca, jednak można kazać aplikacji uwzględniać świt i zmierzch, w trzech ich rodzajach: cywilnym (gdy środek tarczy Słońca jest 6° poniżej horyzontu), morskim/żeglarskim (12°), albo astronomicznym (18°).</value>
+  </data>
+  <data name="resAboutGPS.Text" xml:space="preserve">
+    <value>  Zegar podaje czas lokalny, dla miejsca określonego albo przez nawigację (jeśli aplikacja ma na to zgodę), albo dla wprowadzonych długości i szerokości geograficznej.  Domyślnie jest to Kraków.</value>
+  </data>
+  <data name="resAboutNumerals.Text" xml:space="preserve">
+    <value>  Godziny opisane są domyślnie oryginalnym systemem rzymskim, ale można przełączyć do wersji rzymskiej zmodernizowanej (z użyciem odejmowania), albo do wersji z naszymi normalnymi cyframi.</value>
+  </data>
+  <data name="resAboutOrientation.Text" xml:space="preserve">
+    <value>  Domyślnie aplikacja "udaje" pionowy zegar słoneczny, taki jak byłby na ścianie. Zegar taki chodzi "w drugą stronę" niż jesteśmy przyzwyczajeni, można więc przełączyć do orientacji poziomej (i wtedy cień porusza się tak jak wskazówka w zegarku).</value>
+  </data>
+  <data name="manifestAppName" xml:space="preserve">
+    <value>Zegar słoneczny</value>
+  </data>
+  <data name="manifestDescription" xml:space="preserve">
+    <value>Prosty zegar słoneczny z 12 godzinami dnia</value>
+  </data>
+  <data name="resAboutFeed.Label" xml:space="preserve">
+    <value>Zgłoś uwagi</value>
+  </data>
+  <data name="resAboutRate.Label" xml:space="preserve">
+    <value>Oceń</value>
+  </data>
+</root>

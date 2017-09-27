@@ -1,0 +1,48 @@
+﻿<Page
+    x:Class="ZegarSloneczny.InfoAbout"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:ZegarSloneczny"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="5"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <ScrollViewer Height="Auto" Grid.Row="1" VerticalAlignment="Top" >
+
+            <Grid Grid.Row="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" x:Uid="resAboutTitle" HorizontalAlignment="Center" Margin="5,5,0,0" TextWrapping="Wrap" Text="About..." VerticalAlignment="Top"/>
+                <TextBlock Grid.Row="1" x:Uid="resAboutApp" HorizontalAlignment="Left" Margin="5,5,0,0" TextWrapping="Wrap" Text="About..." VerticalAlignment="Top"/>
+                <TextBlock Grid.Row="2" x:Uid="resAboutOrientation" HorizontalAlignment="Left" Margin="5,5,0,0" TextWrapping="Wrap" Text="About..." VerticalAlignment="Top"/>
+                <TextBlock Grid.Row="3" x:Uid="resAboutNumerals" HorizontalAlignment="Left" Margin="5,5,0,0" TextWrapping="Wrap" Text="About..." VerticalAlignment="Top"/>
+                <TextBlock Grid.Row="4" x:Uid="resAboutDusk" HorizontalAlignment="Left" Margin="5,5,0,0" TextWrapping="Wrap" Text="About..." VerticalAlignment="Top"/>
+                <TextBlock Grid.Row="5" x:Uid="resAboutGPS" HorizontalAlignment="Left" Margin="5,5,0,0" TextWrapping="Wrap" Text="About..." VerticalAlignment="Top"/>
+            </Grid>
+        </ScrollViewer>
+        <!--<Button Grid.Row="2" Content="Ok" HorizontalAlignment="Center" Margin="0,10,0,10" VerticalAlignment="bottom" Click="bAboutOk_Click"/>-->
+
+    </Grid>
+    <Page.BottomAppBar>
+        <CommandBar>
+            <AppBarButton x:Uid="resAboutRate" Icon="OutlineStar" Label="Rate" Click="bRateIt_Click" />
+            <!--<AppBarButton x:Uid="resAboutFeed" Icon="Comment" Label="Feedback" Click="bFeedback_Click" />-->
+            <AppBarSeparator/>
+            <AppBarButton Icon="Accept" Label="Ok" Click="bAboutOk_Click"/>
+            <AppBarSeparator/>
+        </CommandBar>
+
+    </Page.BottomAppBar>
+</Page>
