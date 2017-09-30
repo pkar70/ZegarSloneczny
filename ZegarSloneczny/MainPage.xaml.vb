@@ -1,6 +1,7 @@
 ﻿' The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
 Imports Windows.UI.Xaml.Shapes
+Imports ZegarSloneczny
 
 ''' <summary>
 ''' An empty page that can be used on its own or navigated to within a Frame.
@@ -19,57 +20,38 @@ Public NotInheritable Class MainPage
     Dim m_CienId As Integer
     Private Timer1 As DispatcherTimer
 
+    Private Shared Sub SetDefaults()
+        Dim iTmp As Integer
+        Dim dTmp As Double
+
+        iTmp = App.GetSettingsInt("orientation", 10)    ' poza zakresem: jak nie ma, to ustaw
+        If iTmp < 0 Or iTmp > 1 Then App.SetSettingsInt("orientation", 0)
+
+        iTmp = App.GetSettingsInt("digits", 10)
+        If iTmp < 0 Or iTmp > 2 Then App.SetSettingsInt("digits", 0)
+
+        iTmp = App.GetSettingsInt("dusk", 10)
+        If iTmp < 0 Or iTmp > 3 Then App.SetSettingsInt("dusk", 0)
+
+        dTmp = App.GetSettingsDouble("latitude", -100)
+        If dTmp < -90 Or dTmp > 90 Then App.SetSettingsDouble("latitude", 50 + 4 / 60)
+
+        dTmp = App.GetSettingsDouble("longitude", -100)
+        If dTmp < -90 Or dTmp > 90 Then App.SetSettingsDouble("longitude", 19 + 56 / 60)
+
+    End Sub
     Private Sub Form_Loaded(sender As Object, e As RoutedEventArgs) Handles layoutRoot.Loaded
         ' Private Sub Sundial_Loaded(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles MyBase.Loaded
         m_CienId = 0
 
-        With Windows.Storage.ApplicationData.Current
-            Dim sTmp As String
-            Dim iTmp As Integer
-            Dim dTmp As Double
 
-            Timer1 = New DispatcherTimer
+        SetDefaults()
 
-            sTmp = .LocalSettings.Values("orientation")
-            If Int32.TryParse(sTmp, iTmp) Then
-                If iTmp < 0 Or iTmp > 1 Then .LocalSettings.Values("orientation") = "0"
-            Else
-                .LocalSettings.Values("orientation") = "0"
-            End If
+        Timer1 = New DispatcherTimer
+        Timer1.Interval = TimeSpan.FromSeconds(1)
+        AddHandler Timer1.Tick, AddressOf Timer1_Tick
+        Timer1.Start()
 
-            sTmp = .LocalSettings.Values("digits")
-            If Int32.TryParse(sTmp, iTmp) Then
-                If iTmp < 0 Or iTmp > 2 Then .LocalSettings.Values("digits") = 0
-            Else
-                .LocalSettings.Values("digits") = 0
-            End If
-
-            sTmp = .LocalSettings.Values("dusk")
-            If Int32.TryParse(sTmp, iTmp) Then
-                If iTmp < 0 Or iTmp > 3 Then .LocalSettings.Values("dusk") = 0
-            Else
-                .LocalSettings.Values("dusk") = 0
-            End If
-
-            sTmp = .LocalSettings.Values("latitude")
-            If Double.TryParse(sTmp, dTmp) Then
-                If dTmp < -90 Or dTmp > 90 Then .LocalSettings.Values("latitude") = 50 + 4 / 60
-            Else
-                .LocalSettings.Values("latitude") = 50 + 4 / 60
-            End If
-
-            sTmp = .LocalSettings.Values("longitude")
-            If Double.TryParse(sTmp, dTmp) Then
-                If dTmp < -180 Or dTmp > 180 Then .LocalSettings.Values("longitude") = 19 + 56 / 60
-            Else
-                .LocalSettings.Values("longitude") = 19 + 56 / 60
-            End If
-
-            Timer1.Interval = TimeSpan.FromSeconds(1)
-            AddHandler Timer1.Tick, AddressOf Timer1_Tick
-            Timer1.Start()
-
-        End With
 
 
     End Sub
@@ -148,7 +130,7 @@ Public NotInheritable Class MainPage
 
             ' podpisz wedle m_Digits = 0 (iiii), 1 (iv), 2 (4)
             Dim m_Horiz As Boolean
-            If Windows.Storage.ApplicationData.Current.LocalSettings.Values("orientation") = "1" Then
+            If App.GetSettingsInt("orientation") = "1" Then
                 m_Horiz = True
             Else
                 m_Horiz = False
@@ -210,7 +192,7 @@ Public NotInheritable Class MainPage
         End If
 
         If hr > 12 Then Exit Sub
-        If Windows.Storage.ApplicationData.Current.LocalSettings.Values("orientation") = "0" Then hr = 12 - hr
+        If App.GetSettingsInt("orientation") = "0" Then hr = 12 - hr
 
         If m_CienId <> 0 Then
             sundial.Children.RemoveAt(m_CienId)
@@ -247,8 +229,6 @@ Public NotInheritable Class MainPage
         ' m_CienId = layoutRoot.Children.Add(oLine)
         m_CienId = sundial.Children.Count
         sundial.Children.Add(oLine)
-        Dim iTmp
-        iTmp = sundial.Children.Count
 
     End Sub
 
@@ -260,28 +240,32 @@ Public NotInheritable Class MainPage
         Me.Frame.Navigate(GetType(InfoAbout))
     End Sub
 
-    Function GodzinaSlonecznaNew()
-        ' po nowemu
-        ' http://www.koch-tcm.ch/usa/local-to-solar-time-calculator/index.php
+    Private Sub bTodayInfo_Click(sender As Object, e As RoutedEventArgs)
+        Me.Frame.Navigate(GetType(TodayInfo))
+    End Sub
 
-        Dim varX, varEOT, varLC, hr As Double
-        'Dim oTz As TimeZone
-        'oTz = TimeZone.CurrentTimeZone
+    'Function GodzinaSlonecznaNew()
+    '    ' po nowemu
+    '    ' http://www.koch-tcm.ch/usa/local-to-solar-time-calculator/index.php
 
-        hr = DateTime.UtcNow.Hour + DateTime.UtcNow.Minute / 60     ' dzisiaj czesc doby
-        varX = ((360 * (DateTime.UtcNow.DayOfYear - 1)) / 365.242) * Math.PI / 180
-        varEOT = 0.258 * Math.Cos(varX) - 7.416 * Math.Sin(varX) - 3.648 * Math.Cos(2 * varX) - 9.228 * Math.Sin(2 * varX)
-        ' varLC = (15 * varZ - GetLongit()) / 15  ' timezone offset (hours) 
-        'varLC = GetLongit() / 15  ' przesuniecie UTC jest wyzej
-        '        GodzinaSlonecznaNew = hr + (varEOT / 60) - varLC - TimeZoneInfo.IsDaylightSavingTime
-        GodzinaSlonecznaNew = hr + (varEOT / 60) - varLC
+    '    Dim varX, varEOT, varLC, hr As Double
+    '    'Dim oTz As TimeZone
+    '    'oTz = TimeZone.CurrentTimeZone
 
-    End Function
-    Function GetOpis(ByVal iHr As Integer, ByVal bHoriz As Boolean)
+    '    hr = DateTime.UtcNow.Hour + DateTime.UtcNow.Minute / 60     ' dzisiaj czesc doby
+    '    varX = ((360 * (DateTime.UtcNow.DayOfYear - 1)) / 365.242) * Math.PI / 180
+    '    varEOT = 0.258 * Math.Cos(varX) - 7.416 * Math.Sin(varX) - 3.648 * Math.Cos(2 * varX) - 9.228 * Math.Sin(2 * varX)
+    '    ' varLC = (15 * varZ - GetLongit()) / 15  ' timezone offset (hours) 
+    '    'varLC = GetLongit() / 15  ' przesuniecie UTC jest wyzej
+    '    '        GodzinaSlonecznaNew = hr + (varEOT / 60) - varLC - TimeZoneInfo.IsDaylightSavingTime
+    '    GodzinaSlonecznaNew = hr + (varEOT / 60) - varLC
+
+    'End Function
+    Shared Function GetOpis(ByVal iHr As Integer, ByVal bHoriz As Boolean)
         ' = 0 (iiii), 1 (iv), 2 (4)
 
         Dim iDigits As Integer
-        iDigits = Windows.Storage.ApplicationData.Current.LocalSettings.Values("digits")
+        iDigits = App.GetSettingsInt("digits")
         If Not bHoriz Then iHr = 12 - iHr
 
         GetOpis = " "
@@ -328,15 +312,13 @@ Public NotInheritable Class MainPage
         End Select
 
     End Function
-    Function GodzinaSloneczna() As Double
+    Shared Function GodzinaSloneczna() As Double
         Dim hr As Double
         Dim dDzien As Double
         Dim WschodZachod As WschodZachodHelp
 
-        With Windows.Storage.ApplicationData.Current.LocalSettings
-            WschodZachod = New WschodZachodHelp(DateTime.UtcNow,
-                 .Values("latitude"), .Values("longitude"), .Values("dusk"))
-        End With
+        WschodZachod = New WschodZachodHelp(DateTime.UtcNow,
+             App.GetSettingsDouble("latitude"), App.GetSettingsDouble("longitude"), App.GetSettingsInt("dusk"))
 
         dDzien = WschodZachod.GetZachod() - WschodZachod.GetWschod()
 

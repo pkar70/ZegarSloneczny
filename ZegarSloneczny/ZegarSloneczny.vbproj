@@ -37,6 +37,7 @@
     <DocumentationFile>ZegarSloneczny.xml</DocumentationFile>
     <NoWarn>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036,42314</NoWarn>
     <RunCodeAnalysis>true</RunCodeAnalysis>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <DefineTrace>true</DefineTrace>
@@ -117,6 +118,9 @@
     <Compile Include="Setup.xaml.vb">
       <DependentUpon>Setup.xaml</DependentUpon>
     </Compile>
+    <Compile Include="TodayInfo.xaml.vb">
+      <DependentUpon>TodayInfo.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -180,6 +184,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Setup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="TodayInfo.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

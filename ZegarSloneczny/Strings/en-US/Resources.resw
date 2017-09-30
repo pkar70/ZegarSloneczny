@@ -168,9 +168,6 @@
   <data name="resTypExact.Content" xml:space="preserve">
     <value>without</value>
   </data>
-  <data name="resTypInfo.Content" xml:space="preserve">
-    <value>type of sunrise/sunset</value>
-  </data>
   <data name="resTypMare.Content" xml:space="preserve">
     <value>nautical</value>
   </data>
@@ -203,5 +200,38 @@
   </data>
   <data name="resAboutRate.Label" xml:space="preserve">
     <value>Rate</value>
+  </data>
+  <data name="resTodayInfo.Label" xml:space="preserve">
+    <value>Today</value>
+  </data>
+  <data name="resPoludnie.Text" xml:space="preserve">
+    <value>Noon</value>
+  </data>
+  <data name="resToday.Text" xml:space="preserve">
+    <value>Day info</value>
+  </data>
+  <data name="resTodayData.Header" xml:space="preserve">
+    <value>at this day</value>
+  </data>
+  <data name="resWschod.Text" xml:space="preserve">
+    <value>Sunrise</value>
+  </data>
+  <data name="resZachod.Text" xml:space="preserve">
+    <value>Sunset</value>
+  </data>
+  <data name="resDayLen.Text" xml:space="preserve">
+    <value>Length of day</value>
+  </data>
+  <data name="resHourLen.Text" xml:space="preserve">
+    <value>Sunhour is wallclock minutes</value>
+  </data>
+  <data name="resNextDayLonger" xml:space="preserve">
+    <value>next day will be longer</value>
+  </data>
+  <data name="resNextDayShorter" xml:space="preserve">
+    <value>next day will be shorter</value>
+  </data>
+  <data name="resTodayLocation.Text" xml:space="preserve">
+    <value>At these coordinates:</value>
   </data>
 </root>

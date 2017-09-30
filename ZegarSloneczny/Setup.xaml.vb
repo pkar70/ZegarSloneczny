@@ -9,35 +9,30 @@ Public NotInheritable Class Setup
 
     Private Sub bSettOK_Click(sender As Object, e As RoutedEventArgs)
 
-        With Windows.Storage.ApplicationData.Current.LocalSettings
-            .Values("orientation") = cbOrient.SelectedIndex
-            .Values("digits") = cbDigits.SelectedIndex
-            .Values("dusk") = cbType.SelectedIndex
+        App.SetSettingsInt("orientation", cbOrient.SelectedIndex)
+        App.SetSettingsInt("digits", cbDigits.SelectedIndex)
+        App.SetSettingsInt("dusk", cbType.SelectedIndex)
 
-            Dim dTmp As Double
-            If Double.TryParse(ebLat.Text, dTmp) Then
-                If dTmp >= -90 And dTmp <= 90 Then .Values("latitude") = dTmp
-            End If
+        Dim dTmp As Double
+        If Double.TryParse(ebLat.Text, dTmp) Then
+            If dTmp >= -90 And dTmp <= 90 Then App.SetSettingsDouble("latitude", dTmp)
+        End If
 
-            If Double.TryParse(ebLong.Text, dTmp) Then
-                If dTmp >= -180 And dTmp <= 180 Then .Values("longitude") = dTmp
-            End If
-
-        End With
+        If Double.TryParse(ebLong.Text, dTmp) Then
+            If dTmp >= -180 And dTmp <= 180 Then App.SetSettingsDouble("longitude", dTmp)
+        End If
 
         Me.Frame.Navigate(GetType(MainPage))
     End Sub
 
     Private Sub Setup_Loaded(sender As Object, e As RoutedEventArgs)
-        With Windows.Storage.ApplicationData.Current.LocalSettings
-            cbOrient.SelectedIndex = .Values("orientation")
-            cbDigits.SelectedIndex = .Values("digits")
-            cbType.SelectedIndex = .Values("dusk")
-            ebLat.Text = .Values("latitude")
-            If ebLat.Text.Length > 8 Then ebLat.Text = .Values("latitude").ToString.Substring(0, 8)
-            ebLong.Text = .Values("longitude")
-            If ebLong.Text.Length > 8 Then ebLong.Text = .Values("longitude").ToString.Substring(0, 8)
-        End With
+        cbOrient.SelectedIndex = App.GetSettingsInt("orientation")
+        cbDigits.SelectedIndex = App.GetSettingsInt("digits")
+        cbType.SelectedIndex = App.GetSettingsInt("dusk")
+        ebLat.Text = App.GetSettingsDouble("latitude").ToString
+        If ebLat.Text.Length > 8 Then ebLat.Text = ebLat.Text.Substring(0, 8)
+        ebLong.Text = App.GetSettingsDouble("longitude").ToString
+        If ebLong.Text.Length > 8 Then ebLong.Text = ebLong.Text.Substring(0, 8)
     End Sub
 
     Private Async Sub bGetGPS_Click(sender As Object, e As RoutedEventArgs)

@@ -168,9 +168,6 @@
   <data name="resTypExact.Content" xml:space="preserve">
     <value>bez</value>
   </data>
-  <data name="resTypInfo.Text" xml:space="preserve">
-    <value>typ świtu (i zmierzchu)</value>
-  </data>
   <data name="resTypMare.Content" xml:space="preserve">
     <value>morski (żeglarski)</value>
   </data>
@@ -203,5 +200,38 @@
   </data>
   <data name="resAboutRate.Label" xml:space="preserve">
     <value>Oceń</value>
+  </data>
+  <data name="resTodayInfo.Label" xml:space="preserve">
+    <value>Dziś</value>
+  </data>
+  <data name="resPoludnie.Text" xml:space="preserve">
+    <value>Południe</value>
+  </data>
+  <data name="resToday.Text" xml:space="preserve">
+    <value>Informacje o dniu</value>
+  </data>
+  <data name="resTodayData.Header" xml:space="preserve">
+    <value>w dniu</value>
+  </data>
+  <data name="resWschod.Text" xml:space="preserve">
+    <value>Wschód</value>
+  </data>
+  <data name="resZachod.Text" xml:space="preserve">
+    <value>Zachód</value>
+  </data>
+  <data name="resDayLen.Text" xml:space="preserve">
+    <value>Długość dnia</value>
+  </data>
+  <data name="resHourLen.Text" xml:space="preserve">
+    <value>Godzina słoneczna ma minut</value>
+  </data>
+  <data name="resNextDayLonger" xml:space="preserve">
+    <value>następny dzień będzie dłuższy</value>
+  </data>
+  <data name="resNextDayShorter" xml:space="preserve">
+    <value>następny dzień będzie krótszy</value>
+  </data>
+  <data name="resTodayLocation.Text" xml:space="preserve">
+    <value>W tym miejscu:</value>
   </data>
 </root>
