@@ -10,10 +10,9 @@
 
     <Page.BottomAppBar>
         <CommandBar>
-            <CommandBar.Content>
-                <Grid/>
-            </CommandBar.Content>
             <AppBarButton Icon="Accept" Label="OK" Click="bSettOK_Click" />
+            <AppBarSeparator/>
+            <AppBarButton Icon="Pin" Label="Pin" Click="bSetupPin_Click"  />
         </CommandBar>
 
     </Page.BottomAppBar>

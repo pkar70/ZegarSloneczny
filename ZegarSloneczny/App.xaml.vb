@@ -1,5 +1,8 @@
 ﻿
+Imports Windows.Data.Xml.Dom
 Imports Windows.Storage
+Imports Windows.UI.Notifications
+Imports Windows.UI.StartScreen
 ''' <summary>
 ''' Provides application-specific behavior to supplement the default Application class.
 ''' </summary>
@@ -126,5 +129,85 @@ NotInheritable Class App
         Return sTmp
 
     End Function
+    Public Shared Function GetSettingsBool(sName As String, Optional iDefault As Boolean = False) As Boolean
+        Dim sTmp As Boolean
+
+        sTmp = iDefault
+
+        If ApplicationData.Current.RoamingSettings.Values.ContainsKey(sName) Then
+            sTmp = CBool(ApplicationData.Current.RoamingSettings.Values(sName).ToString)
+        End If
+        If ApplicationData.Current.LocalSettings.Values.ContainsKey(sName) Then
+            sTmp = CBool(ApplicationData.Current.LocalSettings.Values(sName).ToString)
+        End If
+
+        Return sTmp
+
+    End Function
+    Public Shared Sub SetSettingsBool(sName As String, sValue As Boolean, Optional bRoam As Boolean = False)
+        If bRoam Then ApplicationData.Current.RoamingSettings.Values(sName) = sValue.ToString
+        ApplicationData.Current.LocalSettings.Values(sName) = sValue.ToString
+    End Sub
+
+    Private Shared Function SecTileUpdateDigTarcza(iHr As Integer, iMin As Integer, b24 As Boolean) As String
+        Dim sTmp As String
+        If Not b24 Then If iHr > 11 Then iHr = iHr - 12
+        Dim sHr = iHr.ToString & ":" & iMin.ToString("d2")
+
+        sTmp = "<tile><visual>"
+
+        sTmp = sTmp & "<binding template ='TileSmall' branding='none' hint-textStacking='center'>"
+        sTmp = sTmp & "<text hint-style='title' hint-align='center'>" & sHr & "</text>"
+        sTmp = sTmp & "</binding>"
+
+        sTmp = sTmp & "<binding template ='TileMedium' branding='none' hint-textStacking='center'>"
+        sTmp = sTmp & "<text hint-style='headerSubtle' hint-align='center'>" & sHr & "</text>"
+        sTmp = sTmp & "</binding>"
+
+        sTmp = sTmp & "<binding template ='TileWide' branding='none' hint-textStacking='center'>"
+        sTmp = sTmp & "<text hint-style='headerSubtle' hint-align='center'>" & sHr & "</text>"
+        sTmp = sTmp & "</binding>"
+
+        sTmp = sTmp & "<binding template ='TileLarge' branding='none' hint-textStacking='center'>"
+        sTmp = sTmp & "<text hint-style='headerSubtle' hint-align='center'>" & sHr & "</text>"
+        sTmp = sTmp & "</binding>"
+
+        sTmp = sTmp & "</visual></tile>"
+
+        SecTileUpdateDigTarcza = sTmp
+    End Function
+    Public Shared Sub SecTileUpdateDig()
+
+        Dim sXml As String
+        Dim oDate As Date = Date.Now
+        oDate.AddSeconds(-oDate.Second) ' wycofaj na poczatek minuty
+
+        Dim oXml As New XmlDocument
+        sXml = SecTileUpdateDigTarcza(oDate.Hour, oDate.Minute, App.GetSettingsBool("uiPinDig24", Globalization.CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.IndexOf("H") > -1))
+        oXml.LoadXml(sXml)
+        Dim oTile = New Windows.UI.Notifications.TileNotification(oXml)
+        Dim oTUPS = TileUpdateManager.CreateTileUpdaterForSecondaryTile("SunDialDig")
+        oTUPS.Clear()
+        oTUPS.Update(oTile)
+
+        For i = 1 To 120    ' 2 godziny
+            oDate = oDate.AddMinutes(1)
+            sXml = SecTileUpdateDigTarcza(oDate.Hour, oDate.Minute, App.GetSettingsBool("uiPinDig24", Globalization.CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.IndexOf("H") > -1))
+            oXml.LoadXml(sXml)
+            Dim oSchST = New ScheduledTileNotification(oXml, oDate)
+            oTUPS.AddToSchedule(oSchST)
+        Next
+
+    End Sub
+    Public Shared Sub SecTileUpdate()
+
+        'If SecondaryTile.Exists("SunDialSun") Then SecTileUpdateSun
+        'If SecondaryTile.Exists("SunDialAna") Then SecTileUpdateAna
+        If SecondaryTile.Exists("SunDialDig") Then SecTileUpdateDig()
+
+        'If SecondaryTile.Exists("SunDialSSg") Then SecTileUpdateSsg
+        'If SecondaryTile.Exists("SunDialBin") Then SecTileUpdateBin
+
+    End Sub
 
 End Class

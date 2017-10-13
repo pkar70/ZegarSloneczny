@@ -234,4 +234,39 @@
   <data name="resTodayLocation.Text" xml:space="preserve">
     <value>W tym miejscu:</value>
   </data>
-</root>
+<data name="resPinHeader.Text" xml:space="preserve">
+<value>Flizy</value>
+</data>
+<data name="resPinHdrCommon.Text" xml:space="preserve">
+<value>Wspólna fliza</value>
+</data>
+<data name="resPinHdrDefault.Text" xml:space="preserve">
+<value>główna</value>
+</data>
+<data name="resPinHdrInclude.Text" xml:space="preserve">
+<value>używana</value>
+</data>
+<data name="resPinHdrConfig.Text" xml:space="preserve">
+<value>konfig. zegara</value>
+</data>
+<data name="resPinHdrWallSun.Text" xml:space="preserve">
+<value>zwykły/ słon.</value>
+</data>
+<data name="resPinHdr1224.Text" xml:space="preserve">
+<value>12h/ 24H</value>
+</data>
+<data name="resPinSundial.Text" xml:space="preserve">
+<value>słoneczny</value>
+</data>
+<data name="resPinAnalog.Text" xml:space="preserve">
+<value>analogowy</value>
+</data>
+<data name="resPinDigital.Text" xml:space="preserve">
+<value>cyfrowy</value>
+</data>
+<data name="resPin7Seg.Text" xml:space="preserve">
+<value>7segment</value>
+</data>
+<data name="resPinBinary.Text" xml:space="preserve">
+<value>binarny</value>
+</data></root>

@@ -234,4 +234,40 @@
   <data name="resTodayLocation.Text" xml:space="preserve">
     <value>At these coordinates:</value>
   </data>
+  <data name="resPinHeader.Text" xml:space="preserve">
+    <value>Tiles</value>
+  </data>
+  <data name="resPinHdrCommon.Text" xml:space="preserve">
+    <value>Common tile</value>
+  </data>
+  <data name="resPinHdrDefault.Text" xml:space="preserve">
+    <value>main</value>
+  </data>
+  <data name="resPinHdrInclude.Text" xml:space="preserve">
+    <value>included</value>
+  </data>
+  <data name="resPinHdrConfig.Text" xml:space="preserve">
+    <value>Clock config</value>
+  </data>
+  <data name="resPinHdrWallSun.Text" xml:space="preserve">
+    <value>wall/ SUN</value>
+  </data>
+  <data name="resPinHdr1224.Text" xml:space="preserve">
+    <value>12h/ 24H</value>
+  </data>
+  <data name="resPinSundial.Text" xml:space="preserve">
+    <value>sundial</value>
+  </data>
+  <data name="resPinAnalog.Text" xml:space="preserve">
+    <value>analog</value>
+  </data>
+  <data name="resPinDigital.Text" xml:space="preserve">
+    <value>digital</value>
+  </data>
+  <data name="resPin7Seg.Text" xml:space="preserve">
+    <value>7segment</value>
+  </data>
+  <data name="resPinBinary.Text" xml:space="preserve">
+    <value>binary</value>
+  </data>
 </root>

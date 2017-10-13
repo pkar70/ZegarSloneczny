@@ -73,4 +73,8 @@ Public NotInheritable Class Setup
         bGetGPS.IsEnabled = True
 
     End Sub
+
+    Private Sub bSetupPin_Click(sender As Object, e As RoutedEventArgs)
+        Me.Frame.Navigate(GetType(Pinning))
+    End Sub
 End Class
