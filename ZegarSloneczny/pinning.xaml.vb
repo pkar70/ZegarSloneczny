@@ -24,6 +24,7 @@ Public NotInheritable Class Pinning
         uiPinDigDef.IsEnabled = App.GetSettingsBool("uiPinDigOn")
         uiPinDigSun.IsOn = App.GetSettingsBool("uiPinDigSun")
         uiPinDig24.IsOn = App.GetSettingsBool("uiPinDig24", Globalization.CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.IndexOf("H") > -1)
+        uiPinDig24.Visibility = Not uiPinDigSun.IsOn
         uiPinDigBut.IsEnabled = Not SecondaryTile.Exists("SunDialDig")
 
         uiPinSSgDef.IsChecked = App.GetSettingsBool("uiPinSSgDef")
@@ -31,6 +32,7 @@ Public NotInheritable Class Pinning
         uiPinSSgDef.IsEnabled = App.GetSettingsBool("uiPinSSgOn")
         uiPinSSgSun.IsOn = App.GetSettingsBool("uiPinSSgSun")
         uiPinSSg24.IsOn = App.GetSettingsBool("uiPinSSg24", Globalization.CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.IndexOf("H") > -1)
+        uiPinSSg24.Visibility = Not uiPinSSgSun.IsOn
         uiPinSsgBut.IsEnabled = Not SecondaryTile.Exists("SunDialSSg")
 
         uiPinBinDef.IsChecked = App.GetSettingsBool("uiPinBinDef")
@@ -38,11 +40,12 @@ Public NotInheritable Class Pinning
         uiPinBinDef.IsEnabled = App.GetSettingsBool("uiPinBinOn")
         uiPinBinSun.IsOn = App.GetSettingsBool("uiPinBinSun")
         uiPinBin24.IsOn = App.GetSettingsBool("uiPinBin24", Globalization.CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.IndexOf("H") > -1)
+        uiPinBin24.Visibility = Not uiPinBinSun.IsOn
         uiPinBinBut.IsEnabled = Not SecondaryTile.Exists("SunDialBin")
 
     End Sub
 
-    Private Sub bPinOK_Click(sender As Object, e As RoutedEventArgs)
+    Private Sub SaveSettings()
         App.SetSettingsBool("uiPinSunDef", uiPinSunDef.IsChecked)
         App.SetSettingsBool("uiPinSunOn", uiPinSunOn.IsOn)
 
@@ -65,16 +68,21 @@ Public NotInheritable Class Pinning
         App.SetSettingsBool("uiPinBinSun", uiPinAnaSun.IsOn)
         App.SetSettingsBool("uiPinBin24", uiPinBin24.IsOn)
 
+    End Sub
+
+    Private Sub bPinOK_Click(sender As Object, e As RoutedEventArgs)
+        SaveSettings()
         Me.Frame.Navigate(GetType(Setup))
     End Sub
 
-    Private Sub uiSundial_Click(sender As Object, e As RoutedEventArgs)
+    Private Async Sub uiSundial_Click(sender As Object, e As RoutedEventArgs)
     End Sub
 
-    Private Sub uiAnalog_Click(sender As Object, e As RoutedEventArgs)
+    Private Async Sub uiAnalog_Click(sender As Object, e As RoutedEventArgs)
     End Sub
 
     Private Async Function AddSecTile(sName As String) As Task(Of Boolean)
+        SaveSettings()  ' uaktualnij zmienne, bo bedzie je wykorzystywal rysujac Tiles
         Dim oSTile = New SecondaryTile(sName, sName, sName, New Uri("ms-appx:///pic/" & sName & ".png"), TileSize.Square150x150)
         Dim isPinned = Await oSTile.RequestCreateAsync()
         Return isPinned
@@ -86,10 +94,14 @@ Public NotInheritable Class Pinning
 
     End Sub
 
-    Private Sub uiSevSeg_Click(sender As Object, e As RoutedEventArgs)
+    Private Async Sub uiSevSeg_Click(sender As Object, e As RoutedEventArgs)
+        If Await AddSecTile("SunDialSsg") Then uiPinSsgBut.IsEnabled = False
+        App.SecTileUpdateSsg()
     End Sub
 
-    Private Sub uiBinary_Click(sender As Object, e As RoutedEventArgs)
+    Private Async Sub uiBinary_Click(sender As Object, e As RoutedEventArgs)
+        If Await AddSecTile("SunDialBin") Then uiPinBinBut.IsEnabled = False
+        App.SecTileUpdateBin()
     End Sub
 
     Private Sub uiSunInc_Change(sender As Object, e As RoutedEventArgs) Handles uiPinSunOn.Toggled
@@ -166,6 +178,30 @@ Public NotInheritable Class Pinning
             uiPinAnaDef.IsChecked = True
         Catch ex As Exception
             ' moze jeszcze nie byc czegos
+        End Try
+    End Sub
+
+    Private Sub uiDigSun_Change(sender As Object, e As RoutedEventArgs) Handles uiPinDigSun.Toggled
+        Try
+            uiPinDig24.Visibility = Not uiPinDigSun.IsOn
+        Catch ex As Exception
+
+        End Try
+    End Sub
+
+    Private Sub uiSsgSun_Change(sender As Object, e As RoutedEventArgs) Handles uiPinSSgSun.Toggled
+        Try
+            uiPinSSg24.Visibility = Not uiPinSSgSun.IsOn
+        Catch ex As Exception
+
+        End Try
+    End Sub
+
+    Private Sub uiBinSun_Change(sender As Object, e As RoutedEventArgs) Handles uiPinBinSun.Toggled
+        Try
+            uiPinBin24.Visibility = Not uiPinBinSun.IsOn
+        Catch ex As Exception
+
         End Try
     End Sub
 End Class

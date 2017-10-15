@@ -11,7 +11,7 @@
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
     <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.15063.0</TargetPlatformVersion>
-    <TargetPlatformMinVersion>10.0.10240.0</TargetPlatformMinVersion>
+    <TargetPlatformMinVersion>10.0.14393.0</TargetPlatformMinVersion>
     <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{F184B08F-C81C-45F6-A57F-5ABD9991F28F}</ProjectTypeGuids>
@@ -172,7 +172,57 @@
     <Content Include="Assets\Square44x44Logo.scale-200.png" />
     <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
+    <Content Include="pic\7\0.png" />
+    <Content Include="pic\7\1.png" />
+    <Content Include="pic\7\2.png" />
+    <Content Include="pic\7\3.png" />
+    <Content Include="pic\7\4.png" />
+    <Content Include="pic\7\5.png" />
+    <Content Include="pic\7\6.png" />
+    <Content Include="pic\7\7.png" />
+    <Content Include="pic\7\8.png" />
+    <Content Include="pic\7\9.png" />
+    <Content Include="pic\7\Null.png" />
+    <Content Include="pic\7\Spacer2.png" />
+    <Content Include="pic\b\1b0b.png" />
+    <Content Include="pic\b\1b1b.png" />
+    <Content Include="pic\b\2b0b.png" />
+    <Content Include="pic\b\2b1b.png" />
+    <Content Include="pic\b\2b2b.png" />
+    <Content Include="pic\b\3b0b.png" />
+    <Content Include="pic\b\3b1b.png" />
+    <Content Include="pic\b\3b2b.png" />
+    <Content Include="pic\b\3b3b.png" />
+    <Content Include="pic\b\3b4b.png" />
+    <Content Include="pic\b\3b5b.png" />
+    <Content Include="pic\b\4b0b.png" />
+    <Content Include="pic\b\4b1b.png" />
+    <Content Include="pic\b\4b2b.png" />
+    <Content Include="pic\b\4b3b.png" />
+    <Content Include="pic\b\4b4b.png" />
+    <Content Include="pic\b\4b5b.png" />
+    <Content Include="pic\b\4b6b.png" />
+    <Content Include="pic\b\4b7b.png" />
+    <Content Include="pic\b\4b8b.png" />
+    <Content Include="pic\b\4b9b.png" />
+    <Content Include="pic\b\s4b0b.png" />
+    <Content Include="pic\b\s4b1b.png" />
+    <Content Include="pic\b\s4b2b.png" />
+    <Content Include="pic\b\s4b3b.png" />
+    <Content Include="pic\b\s4b4b.png" />
+    <Content Include="pic\b\s4b5b.png" />
+    <Content Include="pic\b\s4b6b.png" />
+    <Content Include="pic\b\s4b7b.png" />
+    <Content Include="pic\b\s4b8b.png" />
+    <Content Include="pic\b\s4b9b.png" />
+    <Content Include="pic\b\Spacer2.png" />
+    <Content Include="pic\b\Spacer20.png" />
+    <Content Include="pic\b\Spacer30.png" />
+    <Content Include="pic\b\sSpacer20.png" />
+    <Content Include="pic\b\sSpacer30.png" />
+    <Content Include="pic\SunDialBin.png" />
     <Content Include="pic\SunDialDig.png" />
+    <Content Include="pic\SunDialSsg.png" />
     <None Include="Package.StoreAssociation.xml" />
   </ItemGroup>
   <ItemGroup>
@@ -237,9 +287,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="pic\7\" />
     <Folder Include="pic\a\" />
-    <Folder Include="pic\b\" />
     <Folder Include="pic\s\" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">

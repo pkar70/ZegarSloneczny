@@ -1,5 +1,6 @@
 ﻿' The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
+Imports Windows.ApplicationModel.Background
 Imports Windows.UI.Xaml.Shapes
 Imports ZegarSloneczny
 
@@ -40,6 +41,40 @@ Public NotInheritable Class MainPage
         If dTmp < -90 Or dTmp > 90 Then App.SetSettingsDouble("longitude", 19 + 56 / 60)
 
     End Sub
+    Private Shared Sub TriggersUnregister()
+
+        For Each oTask In BackgroundTaskRegistration.AllTasks
+            If oTask.Value.Name = "ZegarSlonecznyTimer" Then oTask.Value.Unregister(True)
+            If oTask.Value.Name = "ZegarSlonecznyServicing" Then oTask.Value.Unregister(True)
+        Next
+
+        BackgroundExecutionManager.RemoveAccess()
+    End Sub
+
+    Private Shared Async Sub TriggersRegister()
+
+        TriggersUnregister()
+
+        Dim oBAS As BackgroundAccessStatus
+        oBAS = Await BackgroundExecutionManager.RequestAccessAsync()
+
+        If oBAS = BackgroundAccessStatus.AlwaysAllowed Or oBAS = BackgroundAccessStatus.AllowedSubjectToSystemPolicy Then
+
+            ' https://docs.microsoft.com/en-us/windows/uwp/launch-resume/create-And-register-an-inproc-background-task
+            Dim builder As BackgroundTaskBuilder = New BackgroundTaskBuilder
+            Dim oRet As BackgroundTaskRegistration
+
+            builder.SetTrigger(New TimeTrigger(60, False))
+            builder.Name = "ZegarSlonecznyTimer"
+            oRet = builder.Register()
+
+            builder.SetTrigger(New SystemTrigger(SystemTriggerType.ServicingComplete, True))
+            builder.Name = "ZegarSlonecznyServicing"
+            oRet = builder.Register()
+
+        End If
+
+    End Sub
     Private Sub Form_Loaded(sender As Object, e As RoutedEventArgs) Handles layoutRoot.Loaded
         ' Private Sub Sundial_Loaded(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles MyBase.Loaded
         m_CienId = 0
@@ -52,7 +87,7 @@ Public NotInheritable Class MainPage
         AddHandler Timer1.Tick, AddressOf Timer1_Tick
         Timer1.Start()
 
-
+        TriggersRegister()
 
     End Sub
     Private Sub Timer1_Tick()
