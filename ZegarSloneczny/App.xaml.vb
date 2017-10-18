@@ -43,6 +43,10 @@ NotInheritable Class App
             End If
 
             ' Ensure the current window is active
+            If e.TileActivatedInfo IsNot Nothing Then
+                ' przelaczenie na nastepny to exit; nie ma zegara do pokazania w maintile, continue
+                If UstawTarczeCommon() Then Me.Exit()
+            End If
             Window.Current.Activate()
         End If
     End Sub
@@ -149,6 +153,28 @@ NotInheritable Class App
         ApplicationData.Current.LocalSettings.Values(sName) = sValue.ToString
     End Sub
 
+    Public Shared Function GetUpdaterClearQueue(sName As String, bCommon As Boolean, sXml As String) As TileUpdater
+        Dim oXml As New XmlDocument
+        oXml.LoadXml(sXml)
+        Dim oTile = New Windows.UI.Notifications.TileNotification(oXml)
+
+        Dim oTUPS As TileUpdater
+        If sName = "" Or bCommon Then
+            oTUPS = TileUpdateManager.CreateTileUpdaterForApplication
+        Else
+            oTUPS = TileUpdateManager.CreateTileUpdaterForSecondaryTile(sName)
+        End If
+
+        oTUPS.Clear()
+        For i = oTUPS.GetScheduledTileNotifications.Count - 1 To 0 Step -1
+            oTUPS.RemoveFromSchedule(oTUPS.GetScheduledTileNotifications(i))
+        Next
+
+        oTUPS.Update(oTile)
+
+        Return oTUPS
+    End Function
+
     Private Shared Function SecTileUpdateDigTarcza(iHr As Integer, iMin As Integer, b24 As Boolean) As String
         Dim sTmp As String
         If Not b24 Then If iHr > 12 Then iHr = iHr - 12
@@ -176,27 +202,98 @@ NotInheritable Class App
 
         SecTileUpdateDigTarcza = sTmp
     End Function
-    Public Shared Sub SecTileUpdateDig()
 
+    Public Shared Sub SecTileUpdateDig(bCommon As Boolean)
         Dim sXml As String
         Dim oDate As Date = Date.Now
         oDate.AddSeconds(-oDate.Second) ' wycofaj na poczatek minuty
 
-        Dim oXml As New XmlDocument
         sXml = SecTileUpdateDigTarcza(oDate.Hour, oDate.Minute, App.GetSettingsBool("uiPinDig24", Globalization.CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.IndexOf("H") > -1))
-        oXml.LoadXml(sXml)
-        Dim oTile = New Windows.UI.Notifications.TileNotification(oXml)
-        Dim oTUPS = TileUpdateManager.CreateTileUpdaterForSecondaryTile("SunDialDig")
-        oTUPS.Clear()
-        For i = oTUPS.GetScheduledTileNotifications.Count - 1 To 0 Step -1
-            oTUPS.RemoveFromSchedule(oTUPS.GetScheduledTileNotifications(i))
-        Next
 
-        oTUPS.Update(oTile)
+        Dim oTUPS As TileUpdater = GetUpdaterClearQueue("SunDialDig", bCommon, sXml)
+        Dim oXml As New XmlDocument
 
         For i = 1 To 90    ' 1.5h, a timer jest co godzine
             oDate = oDate.AddMinutes(1)
             sXml = SecTileUpdateDigTarcza(oDate.Hour, oDate.Minute, App.GetSettingsBool("uiPinDig24", Globalization.CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.IndexOf("H") > -1))
+            oXml.LoadXml(sXml)
+            Dim oSchST = New ScheduledTileNotification(oXml, oDate)
+            If i = 90 Then oSchST.ExpirationTime = oDate.AddMinutes(2)  ' wygas, nawet jak nie bedzie aktualizacji
+            oTUPS.AddToSchedule(oSchST)
+        Next
+
+    End Sub
+    Public Shared Sub SecTileUpdateSun(bCommon As Boolean)
+        Dim sXml As String
+        Dim oDate As Date = Date.Now
+        oDate.AddSeconds(-oDate.Second) ' wycofaj na poczatek minuty
+
+        'sXml = SecTileUpdateAnaTarcza(oDate.Hour, oDate.Minute, App.GetSettingsBool("uiPinAna24", Globalization.CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.IndexOf("H") > -1))
+
+        'Dim oTUPS As TileUpdater = GetUpdaterClearQueue("SunDialDig", bCommon, sXml)
+        'Dim oXml As New XmlDocument
+
+        'For i = 1 To 90    ' 1.5h, a timer jest co godzine
+        '    oDate = oDate.AddMinutes(1)
+        '    sXml = SecTileUpdateDigTarcza(oDate.Hour, oDate.Minute, App.GetSettingsBool("uiPinDig24", Globalization.CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.IndexOf("H") > -1))
+        '    oXml.LoadXml(sXml)
+        '    Dim oSchST = New ScheduledTileNotification(oXml, oDate)
+        '    If i = 90 Then oSchST.ExpirationTime = oDate.AddMinutes(2)  ' wygas, nawet jak nie bedzie aktualizacji
+        '    oTUPS.AddToSchedule(oSchST)
+        'Next
+
+    End Sub
+
+    Private Shared Async Function EnsureAnaTarczaExist(iHr As Integer, iMin As Integer) As Task(Of String)
+        Dim sPic = "pic\a\" & iHr.ToString("d2") & iMin.ToString("d2") & ".png"
+
+        ' check if file exist
+        Dim oSF = Windows.ApplicationModel.Package.Current.InstalledLocation
+        If Await oSF.TryGetItemAsync(sPic) IsNot Nothing Then Return sPic
+
+        ' jesli nie, zrob tarcze
+        Return sPic
+    End Function
+    Private Shared Async Function SecTileUpdateAnaTarcza(iHr As Integer, iMin As Integer) As Task(Of String)
+        Dim sTmp, sPic As String
+
+        sPic = Await EnsureAnaTarczaExist(iHr, iMin)
+        sTmp = "<tile><visual>"
+
+        sTmp = sTmp & "<binding template ='TileSmall' branding='none'>"
+        sTmp = sTmp & "<image hint-align='center' src='" & sPic & "'/>"
+        sTmp = sTmp & "</binding>"
+
+        sTmp = sTmp & "<binding template ='TileMedium' branding='none'>"
+        sTmp = sTmp & "<image hint-align='center' src='" & sPic & "'/>"
+        sTmp = sTmp & "</binding>"
+
+        sTmp = sTmp & "<binding template ='TileWide' branding='none'>"
+        sTmp = sTmp & "<image hint-align='center' src='" & sPic & "'/>"
+        sTmp = sTmp & "</binding>"
+
+        sTmp = sTmp & "<binding template ='TileLarge' branding='none'>"
+        sTmp = sTmp & "<image hint-align='center' src='" & sPic & "'/>"
+        sTmp = sTmp & "</binding>"
+
+        sTmp = sTmp & "</visual></tile>"
+
+        Return sTmp
+    End Function
+
+    Public Shared Async Sub SecTileUpdateAna(bCommon As Boolean)
+        Dim sXml As String
+        Dim oDate As Date = Date.Now
+        oDate.AddSeconds(-oDate.Second) ' wycofaj na poczatek minuty
+
+        sXml = Await SecTileUpdateAnaTarcza(oDate.Hour, oDate.Minute)
+
+        Dim oTUPS As TileUpdater = GetUpdaterClearQueue("SunDialAna", bCommon, sXml)
+        Dim oXml As New XmlDocument
+
+        For i = 1 To 90    ' 1.5h, a timer jest co godzine
+            oDate = oDate.AddMinutes(1)
+            sXml = Await SecTileUpdateAnaTarcza(oDate.Hour, oDate.Minute)
             oXml.LoadXml(sXml)
             Dim oSchST = New ScheduledTileNotification(oXml, oDate)
             If i = 90 Then oSchST.ExpirationTime = oDate.AddMinutes(2)  ' wygas, nawet jak nie bedzie aktualizacji
@@ -251,23 +348,14 @@ NotInheritable Class App
 
         SecTileUpdateBinTarcza = sTmp
     End Function
-    Public Shared Sub SecTileUpdateBin()
-
+    Public Shared Sub SecTileUpdateBin(bCommon As Boolean)
         Dim sXml As String
         Dim oDate As Date = Date.Now
         oDate.AddSeconds(-oDate.Second) ' wycofaj na poczatek minuty
 
-        Dim oXml As New XmlDocument
         sXml = SecTileUpdateBinTarcza(oDate.Hour, oDate.Minute, App.GetSettingsBool("uiPinBin24", Globalization.CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.IndexOf("H") > -1))
-        oXml.LoadXml(sXml)
-        Dim oTile = New Windows.UI.Notifications.TileNotification(oXml)
-        Dim oTUPS = TileUpdateManager.CreateTileUpdaterForSecondaryTile("SunDialBin")
-        oTUPS.Clear()
-        For i = oTUPS.GetScheduledTileNotifications.Count - 1 To 0 Step -1
-            oTUPS.RemoveFromSchedule(oTUPS.GetScheduledTileNotifications(i))
-        Next
-
-        oTUPS.Update(oTile)
+        Dim oTUPS As TileUpdater = GetUpdaterClearQueue("SunDialBin", bCommon, sXml)
+        Dim oXml As New XmlDocument
 
         For i = 1 To 90    ' 1.5h, a timer jest co godzine
             oDate = oDate.AddMinutes(1)
@@ -323,23 +411,15 @@ NotInheritable Class App
 
         SecTileUpdateSsgTarcza = sTmp
     End Function
-    Public Shared Sub SecTileUpdateSsg()
+    Public Shared Sub SecTileUpdateSsg(bCommon As Boolean)
 
         Dim sXml As String
         Dim oDate As Date = Date.Now
         oDate.AddSeconds(-oDate.Second) ' wycofaj na poczatek minuty
 
-        Dim oXml As New XmlDocument
         sXml = SecTileUpdateSsgTarcza(oDate.Hour, oDate.Minute, App.GetSettingsBool("uiPinSsg24", Globalization.CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.IndexOf("H") > -1))
-        oXml.LoadXml(sXml)
-        Dim oTile = New Windows.UI.Notifications.TileNotification(oXml)
-        Dim oTUPS = TileUpdateManager.CreateTileUpdaterForSecondaryTile("SunDialSsg")
-        oTUPS.Clear()
-        For i = oTUPS.GetScheduledTileNotifications.Count - 1 To 0 Step -1
-            oTUPS.RemoveFromSchedule(oTUPS.GetScheduledTileNotifications(i))
-        Next
-
-        oTUPS.Update(oTile)
+        Dim oTUPS As TileUpdater = GetUpdaterClearQueue("SunDialSsg", bCommon, sXml)
+        Dim oXml As New XmlDocument
 
         For i = 1 To 90    ' 1.5h, a timer jest co godzine
             oDate = oDate.AddMinutes(1)
@@ -353,17 +433,141 @@ NotInheritable Class App
     End Sub
     Public Shared Sub SecTileUpdate()
 
-        'If SecondaryTile.Exists("SunDialSun") Then SecTileUpdateSun
-        'If SecondaryTile.Exists("SunDialAna") Then SecTileUpdateAna
-        If SecondaryTile.Exists("SunDialDig") Then SecTileUpdateDig()
+        If SecondaryTile.Exists("SunDialSun") Then SecTileUpdateSun(False)
+        If SecondaryTile.Exists("SunDialAna") Then SecTileUpdateAna(False)
+        If SecondaryTile.Exists("SunDialDig") Then SecTileUpdateDig(False)
 
-        If SecondaryTile.Exists("SunDialSSg") Then SecTileUpdateSsg()
-        If SecondaryTile.Exists("SunDialBin") Then SecTileUpdateBin()
+        If SecondaryTile.Exists("SunDialSSg") Then SecTileUpdateSsg(False)
+        If SecondaryTile.Exists("SunDialBin") Then SecTileUpdateBin(False)
 
         'if analogicznie do glownej tile
     End Sub
 
+    Public Shared Sub PriTileUpdate()
+        ' rysowanie main Tile - z timer
+
+        ' if not exist tile exit sub
+        ' https://docs.microsoft.com/en-us/windows/uwp/controls-and-patterns/tiles-and-notifications-primary-tile-apis
+        'ale to od CreatorsUpdate, Aska tego nie ma.
+        'Dim entry = Await Package.Current.GetAppListEntriesAsync()
+        'Dim isPinned = Await StartScreenManager.GetDefault().ContainsAppListEntryAsync(entry)
+        'If Not isPinned Then Exit Sub
+
+        ' rysujemy defaultowy zegarek, od teraz przelacznik zaczyna od zera
+        If App.GetSettingsBool("uiPinSunDef") Then
+            SecTileUpdateSun(True)
+            SetSettingsInt("uiCurrentClock", 1)
+        End If
+        If App.GetSettingsBool("uiPinAnaDef") Then
+            SecTileUpdateAna(True)
+            SetSettingsInt("uiCurrentClock", 2)
+        End If
+        If App.GetSettingsBool("uiPinDigDef") Then
+            SecTileUpdateDig(True)
+            SetSettingsInt("uiCurrentClock", 3)
+        End If
+        If App.GetSettingsBool("uiPinSSgDef") Then
+            SecTileUpdateSsg(True)
+            SetSettingsInt("uiCurrentClock", 4)
+        End If
+        If App.GetSettingsBool("uiPinBinDef") Then
+            SecTileUpdateBin(True)
+            SetSettingsInt("uiCurrentClock", 5)
+        End If
+
+    End Sub
+    Private Shared Sub DelNearestUpdate(iSec As Integer)
+        Dim oTUPS = TileUpdateManager.CreateTileUpdaterForApplication()
+        Dim oDate As Date = Date.Now
+        oDate.AddSeconds(iSec)
+
+        For i = oTUPS.GetScheduledTileNotifications.Count - 1 To 0 Step -1
+            If oTUPS.GetScheduledTileNotifications.Item(i).DeliveryTime < oDate Then
+                oTUPS.RemoveFromSchedule(oTUPS.GetScheduledTileNotifications(i))
+            End If
+        Next
+
+    End Sub
+    Private Shared Function GetNextClockId(iCurrentClock As Integer) As Integer
+
+        ' kontrola ostatniego czasu zmiany
+        Dim iSecNow, iSecOld As Integer
+        iSecOld = GetSettingsInt("LastChangeTile")
+        iSecNow = CInt(Date.Now.ToString("HHmmss"))
+        '  jesli dawno, to reset - idziemy od nowa (ale HMS dzisiaj moze byc < HMS wczoraj)
+        If Math.Abs(iSecNow - iSecOld) > 10 Then iCurrentClock = 0
+        ' DZIWNOSC: to ponizsze na sledzeniu przeskakuje do End Function
+        ' ale pulapka linijka nizej - wskakuje. Zakaz sledzenia? :)
+        SetSettingsInt("LastChangeTile", iSecNow)
+
+        iCurrentClock = iCurrentClock + 1
+        If iCurrentClock > 5 Then iCurrentClock = 1
+
+        If iCurrentClock < 2 Then
+            If App.GetSettingsBool("uiPinSunOn") And Not App.GetSettingsBool("uiPinSunDef") Then Return 1
+        End If
+
+        If iCurrentClock < 3 Then
+            If App.GetSettingsBool("uiPinAnaOn") And Not App.GetSettingsBool("uiPinAnaDef") Then Return 2
+        End If
+
+        If iCurrentClock < 4 Then
+            If App.GetSettingsBool("uiPinDigOn") And Not App.GetSettingsBool("uiPinDigDef") Then Return 3
+        End If
+
+        If iCurrentClock < 5 Then
+            If App.GetSettingsBool("uiPinSSgOn") And Not App.GetSettingsBool("uiPinSSgDef") Then Return 4
+        End If
+
+        If iCurrentClock < 6 Then
+            If App.GetSettingsBool("uiPinBinOn") And Not App.GetSettingsBool("uiPinBinDef") Then Return 5
+        End If
+
+        Return 0    ' błędne ustawienia najwyrazniej, ale po prostu nic nie daj
+
+    End Function
+
+    Private Shared Function UstawTarczeCommon() As Boolean
+        ' obsługa kliknięcia na main Tile
+
+        Dim iClock As Integer = GetSettingsInt("uiCurrentClock")
+        iClock = GetNextClockId(iClock)
+        If iClock = 0 Then Return False
+        SetSettingsInt("uiCurrentClock", iClock)
+
+        Dim sXml As String
+        Dim oDate As Date = Date.Now
+
+        Select Case iClock
+            Case 1  ' sundial
+                Return False    ' tego jeszcze nie umiemy
+            Case 2  ' analog
+                Return False   ' tego jeszcze nie umiemy
+            Case 3  ' digital
+                sXml = SecTileUpdateDigTarcza(oDate.Hour, oDate.Minute, App.GetSettingsBool("uiPinDig24", Globalization.CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.IndexOf("H") > -1))
+            Case 4  ' 7seg
+                sXml = SecTileUpdateSsgTarcza(oDate.Hour, oDate.Minute, App.GetSettingsBool("uiPinSsg24", Globalization.CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.IndexOf("H") > -1))
+            Case 5  ' bin
+                sXml = SecTileUpdateBinTarcza(oDate.Hour, oDate.Minute, App.GetSettingsBool("uiPinBin24", Globalization.CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.IndexOf("H") > -1))
+            Case Else
+                Return False     ' dziwacznosc, bo tak byc nie powinno
+        End Select
+
+        Dim oXml As New XmlDocument
+        oXml.LoadXml(sXml)
+
+        Dim oTile = New Windows.UI.Notifications.TileNotification(oXml)
+        Dim oTUPS = TileUpdateManager.CreateTileUpdaterForApplication
+
+        DelNearestUpdate(30)    ' usun aktualizacje tile jesli jest < 30 sekund do niej
+
+        oTUPS.Update(oTile)
+
+        Return True
+    End Function
+
     Protected Overrides Sub OnBackgroundActivated(args As BackgroundActivatedEventArgs)
         SecTileUpdate()
+        PriTileUpdate()
     End Sub
 End Class

@@ -47,26 +47,33 @@ Public NotInheritable Class Pinning
 
     Private Sub SaveSettings()
         App.SetSettingsBool("uiPinSunDef", uiPinSunDef.IsChecked)
+        If uiPinSunDef.IsChecked Then App.SetSettingsInt("uiCurrentClock", 1)
         App.SetSettingsBool("uiPinSunOn", uiPinSunOn.IsOn)
 
         App.SetSettingsBool("uiPinAnaDef", uiPinAnaDef.IsChecked)
+        If uiPinAnaDef.IsChecked Then App.SetSettingsInt("uiCurrentClock", 2)
         App.SetSettingsBool("uiPinAnaOn", uiPinAnaOn.IsOn)
         App.SetSettingsBool("uiPinAnaSun", uiPinAnaSun.IsOn)
 
-        App.SetSettingsBool("uiPinDigDef", uiPinAnaDef.IsChecked)
-        App.SetSettingsBool("uiPinDigOn", uiPinAnaOn.IsOn)
-        App.SetSettingsBool("uiPinDigSun", uiPinAnaSun.IsOn)
+        App.SetSettingsBool("uiPinDigDef", uiPinDigDef.IsChecked)
+        If uiPinDigDef.IsChecked Then App.SetSettingsInt("uiCurrentClock", 3)
+        App.SetSettingsBool("uiPinDigOn", uiPinDigOn.IsOn)
+        App.SetSettingsBool("uiPinDigSun", uiPinDigSun.IsOn)
         App.SetSettingsBool("uiPinDig24", uiPinDig24.IsOn)
 
-        App.SetSettingsBool("uiPinSSgDef", uiPinAnaDef.IsChecked)
-        App.SetSettingsBool("uiPinSSgOn", uiPinAnaOn.IsOn)
-        App.SetSettingsBool("uiPinSSgSun", uiPinAnaSun.IsOn)
+        App.SetSettingsBool("uiPinSSgDef", uiPinSSgDef.IsChecked)
+        If uiPinSSgDef.IsChecked Then App.SetSettingsInt("uiCurrentClock", 4)
+        App.SetSettingsBool("uiPinSSgOn", uiPinSSgOn.IsOn)
+        App.SetSettingsBool("uiPinSSgSun", uiPinSSgSun.IsOn)
         App.SetSettingsBool("uiPinSSg24", uiPinSSg24.IsOn)
 
-        App.SetSettingsBool("uiPinBinDef", uiPinAnaDef.IsChecked)
-        App.SetSettingsBool("uiPinBinOn", uiPinAnaOn.IsOn)
-        App.SetSettingsBool("uiPinBinSun", uiPinAnaSun.IsOn)
+        App.SetSettingsBool("uiPinBinDef", uiPinBinDef.IsChecked)
+        If uiPinBinDef.IsChecked Then App.SetSettingsInt("uiCurrentClock", 5)
+        App.SetSettingsBool("uiPinBinOn", uiPinBinOn.IsOn)
+        App.SetSettingsBool("uiPinBinSun", uiPinBinSun.IsOn)
         App.SetSettingsBool("uiPinBin24", uiPinBin24.IsOn)
+
+        App.PriTileUpdate()
 
     End Sub
 
@@ -88,20 +95,18 @@ Public NotInheritable Class Pinning
         Return isPinned
     End Function
     Private Async Sub uiDigital_Click(sender As Object, e As RoutedEventArgs)
-
         If Await AddSecTile("SunDialDig") Then uiPinDigBut.IsEnabled = False
-        App.SecTileUpdateDig()
-
+        App.SecTileUpdateDig(False)
     End Sub
 
     Private Async Sub uiSevSeg_Click(sender As Object, e As RoutedEventArgs)
         If Await AddSecTile("SunDialSsg") Then uiPinSsgBut.IsEnabled = False
-        App.SecTileUpdateSsg()
+        App.SecTileUpdateSsg(False)
     End Sub
 
     Private Async Sub uiBinary_Click(sender As Object, e As RoutedEventArgs)
         If Await AddSecTile("SunDialBin") Then uiPinBinBut.IsEnabled = False
-        App.SecTileUpdateBin()
+        App.SecTileUpdateBin(False)
     End Sub
 
     Private Sub uiSunInc_Change(sender As Object, e As RoutedEventArgs) Handles uiPinSunOn.Toggled
@@ -204,4 +209,5 @@ Public NotInheritable Class Pinning
 
         End Try
     End Sub
+
 End Class
