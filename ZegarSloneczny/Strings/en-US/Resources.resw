@@ -270,4 +270,7 @@
   <data name="resPinBinary.Text" xml:space="preserve">
     <value>binary</value>
   </data>
+  <data name="resCreatingTarcza" xml:space="preserve">
+    <value>Please wait, creating clock images...</value>
+  </data>
 </root>

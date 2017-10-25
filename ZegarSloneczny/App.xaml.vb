@@ -1,7 +1,10 @@
 ﻿
+Imports Microsoft.Graphics.Canvas
 Imports Windows.Data.Xml.Dom
 Imports Windows.Storage
+Imports Windows.UI
 Imports Windows.UI.Notifications
+Imports Windows.UI.Popups
 Imports Windows.UI.StartScreen
 ''' <summary>
 ''' Provides application-specific behavior to supplement the default Application class.
@@ -228,72 +231,217 @@ NotInheritable Class App
         Dim oDate As Date = Date.Now
         oDate.AddSeconds(-oDate.Second) ' wycofaj na poczatek minuty
 
-        'sXml = SecTileUpdateAnaTarcza(oDate.Hour, oDate.Minute, App.GetSettingsBool("uiPinAna24", Globalization.CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.IndexOf("H") > -1))
+        sXml = SecTileUpdateSunTarcza(oDate.Hour, oDate.Minute)
 
-        'Dim oTUPS As TileUpdater = GetUpdaterClearQueue("SunDialDig", bCommon, sXml)
-        'Dim oXml As New XmlDocument
+        Dim oTUPS As TileUpdater = GetUpdaterClearQueue("SunDialSun", bCommon, sXml)
+        Dim oXml As New XmlDocument
 
-        'For i = 1 To 90    ' 1.5h, a timer jest co godzine
-        '    oDate = oDate.AddMinutes(1)
-        '    sXml = SecTileUpdateDigTarcza(oDate.Hour, oDate.Minute, App.GetSettingsBool("uiPinDig24", Globalization.CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.IndexOf("H") > -1))
-        '    oXml.LoadXml(sXml)
-        '    Dim oSchST = New ScheduledTileNotification(oXml, oDate)
-        '    If i = 90 Then oSchST.ExpirationTime = oDate.AddMinutes(2)  ' wygas, nawet jak nie bedzie aktualizacji
-        '    oTUPS.AddToSchedule(oSchST)
-        'Next
+        For i = 1 To 90    ' 1.5h, a timer jest co godzine
+            oDate = oDate.AddMinutes(1)
+            sXml = SecTileUpdateSunTarcza(oDate.Hour, oDate.Minute)
+            oXml.LoadXml(sXml)
+            Dim oSchST = New ScheduledTileNotification(oXml, oDate)
+            If i = 90 Then oSchST.ExpirationTime = oDate.AddMinutes(2)  ' wygas, nawet jak nie bedzie aktualizacji
+            oTUPS.AddToSchedule(oSchST)
+        Next
 
     End Sub
 
-    Private Shared Async Function EnsureAnaTarczaExist(iHr As Integer, iMin As Integer) As Task(Of String)
-        Dim sPic = "pic\a\" & iHr.ToString("d2") & iMin.ToString("d2") & ".png"
+    Public Shared Async Sub EnsureAnaTarczaExist(bMsg As Boolean)
 
         ' check if file exist
-        Dim oSF = Windows.ApplicationModel.Package.Current.InstalledLocation
-        If Await oSF.TryGetItemAsync(sPic) IsNot Nothing Then Return sPic
+        Dim oFolderP = Await ApplicationData.Current.LocalFolder.CreateFolderAsync("pic", CreationCollisionOption.OpenIfExists)
+        Dim oFolder = Await oFolderP.CreateFolderAsync("a", CreationCollisionOption.OpenIfExists)
+        If Await oFolder.TryGetItemAsync("0000.png") IsNot Nothing Then Exit Sub
+        ' 1159 - wtedy wylatuje na errorze, bo w dwu watkach zaczyna tworzyc pliki
 
-        ' jesli nie, zrob tarcze
-        Return sPic
-    End Function
-    Private Shared Async Function SecTileUpdateAnaTarcza(iHr As Integer, iMin As Integer) As Task(Of String)
+        ' i tak nie dziala! tzn. nie wyswietla, a poza tym kod idzie dalej, on pracuje w tle.
+        'Dim oMsg As New MessageDialog(
+        '    Windows.ApplicationModel.Resources.ResourceLoader.GetForCurrentView().GetString("resCreatingTarcza"))
+        'Dim oTaskMsg As IAsyncOperation(Of UICommand)
+
+        'If bMsg Then oTaskMsg = oMsg.ShowAsync()
+
+        ' sample
+        ' https://social.msdn.microsoft.com/Forums/windowsapps/en-US/db4710c7-fe8e-4019-97ea-75d5300b2a7d/uwp-draw-line-shape-image-directly-on-writeablebitmap-?forum=wpdevelop
+        ' dokumentacja
+        ' http://microsoft.github.io/Win2D/html/Introduction.htm
+
+        Dim oDevice = CanvasDevice.GetSharedDevice()
+
+
+        ' 1. rysowanie tarczy (wspólne)
+        ' 200x200 pokazuje za mało (jest crop), robimy 150 - ale z bckgrnd moze jest inaczej
+        Dim oTarczaTlo = New CanvasRenderTarget(oDevice, 200, 200, 96)
+
+        Dim ds = oTarczaTlo.CreateDrawingSession
+
+        ds.Clear(Colors.Transparent)
+
+        ' 0,0 jest na gorze
+
+        Dim iGrub, iLen As Integer
+        Dim ny, nx, nx1, ny1 As Integer
+
+        Dim dLuMinutowy = 6 * Math.PI / 180
+        Dim dLukGodzinny = 30 * Math.PI / 180
+
+        For i = 1 To 60
+            iGrub = 2
+            iLen = 10
+
+            If i Mod 5 = 0 Then
+                iGrub = 6
+                iLen = 20
+            End If
+
+            If i Mod 15 = 0 Then
+                iGrub = 8
+            End If
+
+            ' tylko raz liczymy sinusa i cosinusa
+            ny = Math.Sin(i * dLuMinutowy) * (95 - iLen)
+            nx = Math.Cos(i * dLuMinutowy) * (95 - iLen)
+            ny1 = Math.Sin(i * dLuMinutowy) * 95
+            nx1 = Math.Cos(i * dLuMinutowy) * 95
+
+
+
+            ds.DrawLine(nx + 100, ny + 100, nx1 + 100, ny1 + 100, Colors.White, iGrub)
+
+        Next
+
+        ds.Dispose()
+
+        ' 2. dodawanie wskazówek
+        For iHr = 0 To 11
+            For iMin = 0 To 59
+                Dim oTarcza = New CanvasRenderTarget(oDevice, 200, 200, 96)
+                ds = oTarcza.CreateDrawingSession
+                ds.Clear(Colors.Transparent)
+                ds.DrawImage(oTarczaTlo)
+
+                ' wskazowka minutowa
+                Dim iNo As Double
+                iNo = iMin - 15
+                iGrub = 6
+                ny1 = Math.Sin(iNo * dLuMinutowy) * 82
+                nx1 = Math.Cos(iNo * dLuMinutowy) * 82
+                ds.DrawLine(100, 100, nx1 + 100, ny1 + 100, Colors.White, iGrub)
+                ny1 = -0.24 * ny1
+                nx1 = -0.24 * nx1
+                ds.DrawLine(100, 100, nx1 + 100, ny1 + 100, Colors.White, iGrub)
+
+                ' wskazowka godzinna
+                iNo = ((iNo + 15) / 60) + iHr - 3
+                If iNo > 12 Then iNo = iNo - 12
+                iGrub = 7
+                ny1 = Math.Sin(iNo * dLukGodzinny) * 65
+                nx1 = Math.Cos(iNo * dLukGodzinny) * 65
+                ds.DrawLine(100, 100, nx1 + 100, ny1 + 100, Colors.White, iGrub)
+                ny1 = -0.31 * ny1
+                nx1 = -0.31 * nx1
+                ds.DrawLine(100, 100, nx1 + 100, ny1 + 100, Colors.White, iGrub)
+
+                ds.Dispose()
+
+                Dim oFilePic = Await oFolder.CreateFileAsync(
+                        iHr.ToString("d2") & iMin.ToString("d2") & ".png", CreationCollisionOption.ReplaceExisting)
+                Await oTarcza.SaveAsync(oFilePic.Path)
+
+                oTarcza.Dispose()
+
+            Next
+        Next
+
+        ' If bMsg Then oTaskMsg.Cancel()  ' tylko gdy go wczesniej utworzylismy
+    End Sub
+
+
+    Public Shared Async Sub EnsureSunTarczaExist(bMsg As Boolean)
+
+        ' check if file exist
+        Dim oFolderP = Await ApplicationData.Current.LocalFolder.CreateFolderAsync("pic", CreationCollisionOption.OpenIfExists)
+        Dim oFolder = Await oFolderP.CreateFolderAsync("s", CreationCollisionOption.OpenIfExists)
+        If Await oFolder.TryGetItemAsync("0000.png") IsNot Nothing Then Exit Sub
+
+        Dim oMsg As New MessageDialog(
+            Windows.ApplicationModel.Resources.ResourceLoader.GetForCurrentView().GetString("resCreatingTarcza"))
+        Dim oTaskMsg As IAsyncOperation(Of UICommand)
+
+        If bMsg Then oTaskMsg = oMsg.ShowAsync()
+
+        ' 1. rysowanie tarczy (część wspólna)
+        ' *TODO*
+        ' 2. rysowanie cienia
+        ' *TODO*
+
+        If bMsg Then oTaskMsg.Cancel()  ' tylko gdy go wczesniej utworzylismy
+    End Sub
+
+    Private Shared Function SecTileUpdateSunAnaTarcza(iHr As Integer, iMin As Integer, bSun As Boolean) As String
         Dim sTmp, sPic As String
 
-        sPic = Await EnsureAnaTarczaExist(iHr, iMin)
+        If bSun Then
+            EnsureSunTarczaExist(False)
+            sPic = "ms-appdata:///local/pic/s/"
+        Else
+            EnsureAnaTarczaExist(False)
+            sPic = "ms-appdata:///local/pic/a/"
+            'sPic = "pic/a/"
+        End If
+
+        If iHr > 11 Then iHr = iHr - 12
+
+        sPic = sPic & iHr.ToString("d2") & iMin.ToString("d2") & ".png"
+
         sTmp = "<tile><visual>"
 
         sTmp = sTmp & "<binding template ='TileSmall' branding='none'>"
-        sTmp = sTmp & "<image hint-align='center' src='" & sPic & "'/>"
+        sTmp = sTmp & "<image placement='background' src='" & sPic & "'/>"
+        'sTmp = sTmp & "<image hint-align='center' src='" & sPic & "'/>"
         sTmp = sTmp & "</binding>"
 
         sTmp = sTmp & "<binding template ='TileMedium' branding='none'>"
-        sTmp = sTmp & "<image hint-align='center' src='" & sPic & "'/>"
+        sTmp = sTmp & "<image placement='background' src='" & sPic & "'/>"
         sTmp = sTmp & "</binding>"
 
         sTmp = sTmp & "<binding template ='TileWide' branding='none'>"
-        sTmp = sTmp & "<image hint-align='center' src='" & sPic & "'/>"
+        sTmp = sTmp & "<image placement='background' src='" & sPic & "'/>"
         sTmp = sTmp & "</binding>"
 
         sTmp = sTmp & "<binding template ='TileLarge' branding='none'>"
-        sTmp = sTmp & "<image hint-align='center' src='" & sPic & "'/>"
+        sTmp = sTmp & "<image placement='background' src='" & sPic & "'/>"
         sTmp = sTmp & "</binding>"
 
         sTmp = sTmp & "</visual></tile>"
 
         Return sTmp
+
     End Function
 
-    Public Shared Async Sub SecTileUpdateAna(bCommon As Boolean)
+
+    Private Shared Function SecTileUpdateAnaTarcza(iHr As Integer, iMin As Integer) As String
+        Return SecTileUpdateSunAnaTarcza(iHr, iMin, False)
+    End Function
+    Private Shared Function SecTileUpdateSunTarcza(iHr As Integer, iMin As Integer) As String
+        Return SecTileUpdateSunAnaTarcza(iHr, iMin, True)
+    End Function
+
+
+    Public Shared Sub SecTileUpdateAna(bCommon As Boolean)
         Dim sXml As String
         Dim oDate As Date = Date.Now
         oDate.AddSeconds(-oDate.Second) ' wycofaj na poczatek minuty
 
-        sXml = Await SecTileUpdateAnaTarcza(oDate.Hour, oDate.Minute)
+        sXml = SecTileUpdateAnaTarcza(oDate.Hour, oDate.Minute)
 
         Dim oTUPS As TileUpdater = GetUpdaterClearQueue("SunDialAna", bCommon, sXml)
         Dim oXml As New XmlDocument
 
         For i = 1 To 90    ' 1.5h, a timer jest co godzine
             oDate = oDate.AddMinutes(1)
-            sXml = Await SecTileUpdateAnaTarcza(oDate.Hour, oDate.Minute)
+            sXml = SecTileUpdateAnaTarcza(oDate.Hour, oDate.Minute)
             oXml.LoadXml(sXml)
             Dim oSchST = New ScheduledTileNotification(oXml, oDate)
             If i = 90 Then oSchST.ExpirationTime = oDate.AddMinutes(2)  ' wygas, nawet jak nie bedzie aktualizacji
@@ -540,9 +688,9 @@ NotInheritable Class App
 
         Select Case iClock
             Case 1  ' sundial
-                Return False    ' tego jeszcze nie umiemy
+                sXml = SecTileUpdateSunTarcza(oDate.Hour, oDate.Minute)
             Case 2  ' analog
-                Return False   ' tego jeszcze nie umiemy
+                sXml = SecTileUpdateAnaTarcza(oDate.Hour, oDate.Minute)
             Case 3  ' digital
                 sXml = SecTileUpdateDigTarcza(oDate.Hour, oDate.Minute, App.GetSettingsBool("uiPinDig24", Globalization.CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.IndexOf("H") > -1))
             Case 4  ' 7seg

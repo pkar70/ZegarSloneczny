@@ -24,3 +24,8 @@ zrobic 211 px (zeby byl srodek, od ktorego 105 w lewo i 105 w prawo)
 
 60 minut * 12 godzin * 25 kB obrazek = 18 MB obrazkow
 Mozna zmniejszyc dwukrotnie, bo przeciez jest symetria (3:00 = lustrzana 9:00)
+
+
+Ikonki analogowe z testTarczyZegara, 
+C:\Users\pkar\AppData\Local\Packages\7aeb8f78-c8c8-4c7a-b5a1-2021cee1c568_29h2h8fr1dtty\LocalState\pic\a\
+Niecale 5 MB.
