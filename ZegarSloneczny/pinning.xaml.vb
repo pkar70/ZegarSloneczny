@@ -85,17 +85,17 @@ Public NotInheritable Class Pinning
     Private Async Sub uiSundial_Click(sender As Object, e As RoutedEventArgs)
         If Await AddSecTile("SunDialSun") Then
             uiPinSunBut.IsEnabled = False
-            App.EnsureSunTarczaExist(True)
+            'App.EnsureSunTarczaExist(True) ' to pierwsza instrukcja w w SecTileUpdate
+            App.SecTileUpdateSun(False)
         End If
-        App.SecTileUpdateSun(False)
     End Sub
 
     Private Async Sub uiAnalog_Click(sender As Object, e As RoutedEventArgs)
         If Await AddSecTile("SunDialAna") Then
             uiPinAnaBut.IsEnabled = False
-            App.EnsureAnaTarczaExist(True)
+            'App.EnsureAnaTarczaExist(True)
+            App.SecTileUpdateAna(False)
         End If
-        App.SecTileUpdateAna(False)
     End Sub
 
     Private Async Function AddSecTile(sName As String) As Task(Of Boolean)

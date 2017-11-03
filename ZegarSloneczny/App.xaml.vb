@@ -1,6 +1,7 @@
 ﻿
 Imports Microsoft.Graphics.Canvas
 Imports Windows.Data.Xml.Dom
+Imports Windows.Foundation.Metadata
 Imports Windows.Storage
 Imports Windows.UI
 Imports Windows.UI.Notifications
@@ -157,9 +158,13 @@ NotInheritable Class App
     End Sub
 
     Public Shared Function GetUpdaterClearQueue(sName As String, bCommon As Boolean, sXml As String) As TileUpdater
-        Dim oXml As New XmlDocument
-        oXml.LoadXml(sXml)
-        Dim oTile = New Windows.UI.Notifications.TileNotification(oXml)
+        Dim oTile As TileNotification
+
+        If sXml IsNot Nothing Then
+            Dim oXml As New XmlDocument
+            oXml.LoadXml(sXml)
+            oTile = New Windows.UI.Notifications.TileNotification(oXml)
+        End If
 
         Dim oTUPS As TileUpdater
         If sName = "" Or bCommon Then
@@ -173,8 +178,9 @@ NotInheritable Class App
             oTUPS.RemoveFromSchedule(oTUPS.GetScheduledTileNotifications(i))
         Next
 
-        oTUPS.Update(oTile)
-
+        If sXml IsNot Nothing Then
+            oTUPS.Update(oTile)
+        End If
         Return oTUPS
     End Function
 
@@ -209,7 +215,7 @@ NotInheritable Class App
     Public Shared Sub SecTileUpdateDig(bCommon As Boolean)
         Dim sXml As String
         Dim oDate As Date = Date.Now
-        oDate.AddSeconds(-oDate.Second) ' wycofaj na poczatek minuty
+        oDate = oDate.AddSeconds(-oDate.Second) ' wycofaj na poczatek minuty
 
         sXml = SecTileUpdateDigTarcza(oDate.Hour, oDate.Minute, App.GetSettingsBool("uiPinDig24", Globalization.CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.IndexOf("H") > -1))
 
@@ -227,23 +233,86 @@ NotInheritable Class App
 
     End Sub
     Public Shared Sub SecTileUpdateSun(bCommon As Boolean)
-        Dim sXml As String
-        Dim oDate As Date = Date.Now
-        oDate.AddSeconds(-oDate.Second) ' wycofaj na poczatek minuty
+        Dim WschodZachod As WschodZachodHelp
 
-        sXml = SecTileUpdateSunTarcza(oDate.Hour, oDate.Minute)
+        WschodZachod = New WschodZachodHelp(DateTime.UtcNow,
+             App.GetSettingsDouble("latitude"), App.GetSettingsDouble("longitude"), App.GetSettingsInt("dusk"))
 
-        Dim oTUPS As TileUpdater = GetUpdaterClearQueue("SunDialSun", bCommon, sXml)
+        Dim dDzien, dNoc, dSun As Double
+
+        dDzien = WschodZachod.GetZachod() - WschodZachod.GetWschod()
+        dNoc = 24 - dDzien
+
+        Dim d5SecD, d5SecN As Double
+        d5SecD = dDzien / 12      ' dług dnia słon w h zwyklych / 12 godzin = dług godziny słon (w h zwyklych)
+        d5SecD = 5 * d5SecD / 60 ' = dług. 5 minut słon. w godzinach zegarowych
+        d5SecD = d5SecD * 60    ' = dług. 5 minut słon. w minutach zegarowych
+        d5SecD = d5SecD * 60    ' = dług. 5 minut słon. w sekundach zegarowych
+
+        d5SecN = dNoc / 12 * 5 * 60 ' to samo dla minut nocnych
+
+        Dim dSecStep, dSecStep1, dHr As Double
+
+        dHr = DateTime.UtcNow.Hour + DateTime.UtcNow.Minute / 60     ' dzisiaj czesc doby
+
+        If dHr > WschodZachod.GetZachod() Or dHr < WschodZachod.GetWschod() Then
+            ' godziny nocne
+            dSun = 12 * (dHr - WschodZachod.GetZachod()) / dNoc
+            dSecStep = d5SecN
+            dSecStep1 = d5SecD
+        Else
+            dSun = 12 * (dHr - WschodZachod.GetWschod()) / dDzien
+            dSecStep = d5SecD
+            dSecStep1 = d5SecN
+        End If
+
+        ' dHr = godzina zegarowa (np. 1.8567)
+        ' dSun = godzina słoneczna 
+        ' dSecStep, dSecStep1 = sekund zegarowych na 5 minut sloneczne teraz i po wschod/zachod
+
+        Dim iSunHr As Integer = 0
+        While iSunHr < dSun     ' wlasny Floor, bo funkcja Fix nie istnieje, a \1 też zaokrągla (w góre czasem!)
+            iSunHr += 1
+        End While
+        If iSunHr > 0 Then iSunHr -= 1
+        Dim iSunMin As Integer = 60 * (dSun - iSunHr)
+        iSunMin = iSunMin - (iSunMin Mod 5)         ' ucinamy na poczatek 5 minutowego fragmentu
+
+        Dim oTUPS As TileUpdater = GetUpdaterClearQueue("SunDialSun", bCommon, Nothing)
         Dim oXml As New XmlDocument
+        Dim sXml As String
 
-        For i = 1 To 90    ' 1.5h, a timer jest co godzine
-            oDate = oDate.AddMinutes(1)
-            sXml = SecTileUpdateSunTarcza(oDate.Hour, oDate.Minute)
+        ' krok petli, 5 minut slonecznych w przeliczeniu na sekundy ścienne
+
+        Dim oDate As Date = Date.Now.AddMinutes(1)
+
+        For i = 0 To 90 Step 5  ' na 90 minut zrob ikonki
+            ' dHr = aktualny czas scienny
+            sXml = SecTileUpdateSunTarcza(iSunHr, iSunMin)
+
             oXml.LoadXml(sXml)
+
             Dim oSchST = New ScheduledTileNotification(oXml, oDate)
-            If i = 90 Then oSchST.ExpirationTime = oDate.AddMinutes(2)  ' wygas, nawet jak nie bedzie aktualizacji
+
+            If i = 90 Then
+                oSchST.ExpirationTime = oDate.AddMinutes(2)  ' wygas, nawet jak nie bedzie aktualizacji
+            End If
             oTUPS.AddToSchedule(oSchST)
+
+            oDate = oDate.AddSeconds(dSecStep)
+            ' kolejne 5 minut
+            iSunMin = iSunMin + 5
+            If iSunMin > 59 Then
+                iSunMin = 0
+                iSunHr = iSunHr + 1
+                If iSunHr > 11 Then ' przejscie przez wschód/zachód
+                    iSunHr = 0
+                    dSecStep = dSecStep1    ' zmiana dlugosci 5 minut (noc/dzien)
+                End If
+            End If
+
         Next
+
 
     End Sub
 
@@ -357,41 +426,105 @@ NotInheritable Class App
         ' If bMsg Then oTaskMsg.Cancel()  ' tylko gdy go wczesniej utworzylismy
     End Sub
 
-
     Public Shared Async Sub EnsureSunTarczaExist(bMsg As Boolean)
 
         ' check if file exist
         Dim oFolderP = Await ApplicationData.Current.LocalFolder.CreateFolderAsync("pic", CreationCollisionOption.OpenIfExists)
         Dim oFolder = Await oFolderP.CreateFolderAsync("s", CreationCollisionOption.OpenIfExists)
         If Await oFolder.TryGetItemAsync("0000.png") IsNot Nothing Then Exit Sub
+        ' drugi obrazek, bo kiedys zrobil ten pierwszy, i brakuje
 
-        Dim oMsg As New MessageDialog(
-            Windows.ApplicationModel.Resources.ResourceLoader.GetForCurrentView().GetString("resCreatingTarcza"))
-        Dim oTaskMsg As IAsyncOperation(Of UICommand)
+        'Dim oMsg As New MessageDialog(
+        '    Windows.ApplicationModel.Resources.ResourceLoader.GetForCurrentView().GetString("resCreatingTarcza"))
+        'Dim oTaskMsg As IAsyncOperation(Of UICommand)
+        'If bMsg Then oTaskMsg = oMsg.ShowAsync()
 
-        If bMsg Then oTaskMsg = oMsg.ShowAsync()
+        Dim m_SetDiameter = 0.65    ' ile wysokosci idzie na cień
+        Dim m_SetPustyLuk As Double = 45    ' 30 stopni pustego kąta
+        Dim m_MoveBottom = 10
 
+        Dim oDevice = CanvasDevice.GetSharedDevice()
         ' 1. rysowanie tarczy (część wspólna)
-        ' *TODO*
-        ' 2. rysowanie cienia
-        ' *TODO*
+        Dim oTarczaTlo = New CanvasRenderTarget(oDevice, 200, 200, 96)
 
-        If bMsg Then oTaskMsg.Cancel()  ' tylko gdy go wczesniej utworzylismy
+        Dim ds = oTarczaTlo.CreateDrawingSession
+        ds.Clear(Colors.Transparent)
+
+        ' gnomon
+        ds.FillCircle(100, m_MoveBottom + 10, 4, Colors.LightGray)
+
+        Dim m_PustyLuk As Double = Math.PI / (180 / m_SetPustyLuk)
+        Dim m_LukGodziny As Double = Math.PI / (180 / ((180 - 2 * m_SetPustyLuk) / 12))
+        Dim m_Diameter = 200 * m_SetDiameter
+
+        Dim nx, ny, nx1, ny1, iGrub As Integer
+        For i As Integer = 0 To 12
+
+            ' rysuj kreske godzinową
+            ny = Math.Sin(m_PustyLuk + i * m_LukGodziny) * m_Diameter
+            nx = Math.Cos(m_PustyLuk + i * m_LukGodziny) * m_Diameter
+            ny1 = ny * 1.08 ' * (m_Diameter + 10), normalnie m_Diameter = 200*0.65 = 130
+            nx1 = nx * 1.08
+            iGrub = 2
+            If i Mod 3 = 0 Then iGrub = 4
+
+            ds.DrawLine(100 + nx, m_MoveBottom + 10 + ny, 100 + nx1, m_MoveBottom + 10 + ny1, Colors.White, iGrub)
+
+            ' rysuj kreske polgodzinna
+            If i < 12 Then
+                ny = Math.Sin(m_LukGodziny / 2 + m_PustyLuk + i * m_LukGodziny) * m_Diameter
+                nx = Math.Cos(m_LukGodziny / 2 + m_PustyLuk + i * m_LukGodziny) * m_Diameter
+                ny1 = ny * 1.04 ' (m_Diameter + 2)
+                nx1 = nx * 1.04
+
+                ds.DrawLine(100 + nx, m_MoveBottom + 10 + ny, 100 + nx1, m_MoveBottom + 10 + ny1, Colors.White, 2)
+            End If
+        Next
+
+        ds.Dispose()
+
+        ' 2. rysowanie cienia - wersja pozioma (0 po prawej stronie)
+        Dim dAngle As Double
+        For iHr = 0 To 11
+            For iMin = 0 To 59 Step 5   ' dokladność 5 minut - musza byc symetryczne, tj. 5 i 55 (bo odbicie lustrzane przy zmianie polozenia)
+                Dim oTarcza = New CanvasRenderTarget(oDevice, 200, 200, 96)
+                ds = oTarcza.CreateDrawingSession
+                ds.Clear(Colors.Transparent)
+                ds.DrawImage(oTarczaTlo)
+
+                dAngle = m_PustyLuk + (iHr + iMin / 60) * m_LukGodziny
+                ny1 = Math.Sin(dAngle) * m_Diameter * 1.01
+                nx1 = Math.Cos(dAngle) * m_Diameter * 1.01
+
+                ds.DrawLine(100, m_MoveBottom + 10, 100 + nx1, m_MoveBottom + 10 + ny1, Colors.LightGray, 3)
+
+                ds.Dispose()
+
+                Dim oFilePic = Await oFolder.CreateFileAsync(
+                        iHr.ToString("d2") & iMin.ToString("d2") & ".png", CreationCollisionOption.ReplaceExisting)
+                Await oTarcza.SaveAsync(oFilePic.Path)
+
+                oTarcza.Dispose()
+
+
+            Next
+        Next
+
+        'If bMsg Then oTaskMsg.Cancel()  ' tylko gdy go wczesniej utworzylismy
     End Sub
 
     Private Shared Function SecTileUpdateSunAnaTarcza(iHr As Integer, iMin As Integer, bSun As Boolean) As String
+        ' zwraca XML z obrazkiem dla iHr i iMin
         Dim sTmp, sPic As String
 
+        If iHr > 11 Then iHr = iHr - 12
+
         If bSun Then
-            EnsureSunTarczaExist(False)
             sPic = "ms-appdata:///local/pic/s/"
         Else
-            EnsureAnaTarczaExist(False)
             sPic = "ms-appdata:///local/pic/a/"
-            'sPic = "pic/a/"
         End If
 
-        If iHr > 11 Then iHr = iHr - 12
 
         sPic = sPic & iHr.ToString("d2") & iMin.ToString("d2") & ".png"
 
@@ -422,9 +555,20 @@ NotInheritable Class App
 
 
     Private Shared Function SecTileUpdateAnaTarcza(iHr As Integer, iMin As Integer) As String
+        EnsureAnaTarczaExist(False)
         Return SecTileUpdateSunAnaTarcza(iHr, iMin, False)
     End Function
     Private Shared Function SecTileUpdateSunTarcza(iHr As Integer, iMin As Integer) As String
+        EnsureSunTarczaExist(False)
+        If iHr > 11 Then iHr = iHr - 12
+
+        If GetSettingsInt("orientation") = "0" Then
+            iHr = 12 - iHr
+            iMin = 60 - iMin    ' muszą byc symetryczne minuty, tj. 5 i -5
+        End If
+
+        iMin = iMin - (iMin Mod 5)
+
         Return SecTileUpdateSunAnaTarcza(iHr, iMin, True)
     End Function
 
@@ -432,19 +576,21 @@ NotInheritable Class App
     Public Shared Sub SecTileUpdateAna(bCommon As Boolean)
         Dim sXml As String
         Dim oDate As Date = Date.Now
-        oDate.AddSeconds(-oDate.Second) ' wycofaj na poczatek minuty
+        oDate = oDate.AddSeconds(-oDate.Second) ' wycofaj na poczatek minuty
 
         sXml = SecTileUpdateAnaTarcza(oDate.Hour, oDate.Minute)
 
         Dim oTUPS As TileUpdater = GetUpdaterClearQueue("SunDialAna", bCommon, sXml)
         Dim oXml As New XmlDocument
 
+        oDate = oDate.AddMinutes(1)
         For i = 1 To 90    ' 1.5h, a timer jest co godzine
-            oDate = oDate.AddMinutes(1)
             sXml = SecTileUpdateAnaTarcza(oDate.Hour, oDate.Minute)
             oXml.LoadXml(sXml)
             Dim oSchST = New ScheduledTileNotification(oXml, oDate)
-            If i = 90 Then oSchST.ExpirationTime = oDate.AddMinutes(2)  ' wygas, nawet jak nie bedzie aktualizacji
+            oDate = oDate.AddMinutes(1)
+            ' If i = 90 Then oSchST.ExpirationTime = oDate.AddMinutes(2)  ' wygas, nawet jak nie bedzie aktualizacji
+            oSchST.ExpirationTime = oDate
             oTUPS.AddToSchedule(oSchST)
         Next
 
@@ -499,7 +645,7 @@ NotInheritable Class App
     Public Shared Sub SecTileUpdateBin(bCommon As Boolean)
         Dim sXml As String
         Dim oDate As Date = Date.Now
-        oDate.AddSeconds(-oDate.Second) ' wycofaj na poczatek minuty
+        oDate = oDate.AddSeconds(-oDate.Second) ' wycofaj na poczatek minuty
 
         sXml = SecTileUpdateBinTarcza(oDate.Hour, oDate.Minute, App.GetSettingsBool("uiPinBin24", Globalization.CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.IndexOf("H") > -1))
         Dim oTUPS As TileUpdater = GetUpdaterClearQueue("SunDialBin", bCommon, sXml)
@@ -563,7 +709,7 @@ NotInheritable Class App
 
         Dim sXml As String
         Dim oDate As Date = Date.Now
-        oDate.AddSeconds(-oDate.Second) ' wycofaj na poczatek minuty
+        oDate = oDate.AddSeconds(-oDate.Second) ' wycofaj na poczatek minuty
 
         sXml = SecTileUpdateSsgTarcza(oDate.Hour, oDate.Minute, App.GetSettingsBool("uiPinSsg24", Globalization.CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.IndexOf("H") > -1))
         Dim oTUPS As TileUpdater = GetUpdaterClearQueue("SunDialSsg", bCommon, sXml)
@@ -591,15 +737,17 @@ NotInheritable Class App
         'if analogicznie do glownej tile
     End Sub
 
-    Public Shared Sub PriTileUpdate()
+    Public Shared Async Sub PriTileUpdate()
         ' rysowanie main Tile - z timer
 
-        ' if not exist tile exit sub
         ' https://docs.microsoft.com/en-us/windows/uwp/controls-and-patterns/tiles-and-notifications-primary-tile-apis
-        'ale to od CreatorsUpdate, Aska tego nie ma.
-        'Dim entry = Await Package.Current.GetAppListEntriesAsync()
-        'Dim isPinned = Await StartScreenManager.GetDefault().ContainsAppListEntryAsync(entry)
-        'If Not isPinned Then Exit Sub
+        ' dopiero od CreatorsUpdate, Aska tego nie ma
+        'If ApiInformation.IsTypePresent("Windows.UI.StartScreen.StartScreenManager") Then
+        '    Dim entry = Await Package.Current.GetAppListEntriesAsync()
+        '    Dim isPinned = Await StartScreenManager.GetDefault().ContainsAppListEntryAsync(entry)
+        '    If Not isPinned Then Exit Sub
+        'End If
+        ' uzasadnienie ze nie ma kontroli istnienia Tile: bo może ktos dodac pozniej
 
         ' rysujemy defaultowy zegarek, od teraz przelacznik zaczyna od zera
         If App.GetSettingsBool("uiPinSunDef") Then
