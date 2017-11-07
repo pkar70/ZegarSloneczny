@@ -22,8 +22,9 @@ Public NotInheritable Class TodayInfo
         App.GetSettingsDouble("latitude"), App.GetSettingsDouble("longitude"), App.GetSettingsInt("dusk"))
 
         Dim dOffset As Double
-        dOffset = Date.UtcNow.Hour - Date.Now.Hour
-        dOffset = dOffset + (Date.UtcNow.Minute - Date.Now.Minute) / 60
+        'dOffset = Date.UtcNow.Hour - Date.Now.Hour
+        'dOffset = dOffset + (Date.UtcNow.Minute - Date.Now.Minute) / 60
+        dOffset = -TimeZoneInfo.Local.GetUtcOffset(oDate).TotalHours   ' minus, by nie zmieniac logiki nizej
 
         ebWschod.Text = Hr2Txt(oHelper.GetWschod - dOffset)
         ebNoon.Text = Hr2Txt(oHelper.GetPoludnie - dOffset)

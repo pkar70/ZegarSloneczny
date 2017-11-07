@@ -75,6 +75,6 @@ Public NotInheritable Class Setup
     End Sub
 
     Private Sub bSetupPin_Click(sender As Object, e As RoutedEventArgs)
-        Me.Frame.Navigate(GetType(Pinning))
+        Me.Frame.Navigate(GetType(PinningSmall))
     End Sub
 End Class

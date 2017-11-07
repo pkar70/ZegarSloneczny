@@ -29,3 +29,5 @@ Mozna zmniejszyc dwukrotnie, bo przeciez jest symetria (3:00 = lustrzana 9:00)
 Ikonki analogowe z testTarczyZegara, 
 C:\Users\pkar\AppData\Local\Packages\7aeb8f78-c8c8-4c7a-b5a1-2021cee1c568_29h2h8fr1dtty\LocalState\pic\a\
 Niecale 5 MB.
+
+C:\Users\pkar\AppData\Local\Packages\622PKar.Realsundial_pm8terbg0v8ky\LocalState\pic

@@ -20,7 +20,7 @@
     <RuntimeIdentifiers>win10-arm;win10-arm-aot;win10-x86;win10-x86-aot;win10-x64;win10-x64-aot</RuntimeIdentifiers>
     <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
     <AppxBundle>Always</AppxBundle>
-    <AppxBundlePlatforms>arm</AppxBundlePlatforms>
+    <AppxBundlePlatforms>x86|x64|arm</AppxBundlePlatforms>
     <AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
     <PackageCertificateThumbprint>F2ADDA30088C47BE6B0D238F89B8844066268F2C</PackageCertificateThumbprint>
   </PropertyGroup>
@@ -118,6 +118,9 @@
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="pinning.xaml.vb">
       <DependentUpon>pinning.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="PinningSmall.xaml.vb">
+      <DependentUpon>PinningSmall.xaml</DependentUpon>
     </Compile>
     <Compile Include="Setup.xaml.vb">
       <DependentUpon>Setup.xaml</DependentUpon>
@@ -227,6 +230,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="pinning.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="PinningSmall.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
