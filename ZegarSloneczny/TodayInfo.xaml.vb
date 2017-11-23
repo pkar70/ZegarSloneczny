@@ -8,8 +8,8 @@ Public NotInheritable Class TodayInfo
     Inherits Page
 
     Private Sub Today_Loaded(sender As Object, e As RoutedEventArgs)
-        ebLong.Text = App.GetSettingsDouble("longitude").ToString.Substring(0, 8)
-        ebLat.Text = App.GetSettingsDouble("latitude").ToString.Substring(0, 8)
+        ebLong.Text = App.GetSettingsDouble("longitude").ToString.Substring(0, Math.Min(8, App.GetSettingsDouble("longitude").ToString.Length))
+        ebLat.Text = App.GetSettingsDouble("latitude").ToString.Substring(0, Math.Min(8, App.GetSettingsDouble("longitude").ToString.Length))
         uiTodayData.Date = Date.Now
         Przelicz()
     End Sub

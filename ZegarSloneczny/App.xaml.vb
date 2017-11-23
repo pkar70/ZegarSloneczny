@@ -175,7 +175,15 @@ NotInheritable Class App
 
         oTUPS.Clear()
         For i = oTUPS.GetScheduledTileNotifications.Count - 1 To 0 Step -1
-            oTUPS.RemoveFromSchedule(oTUPS.GetScheduledTileNotifications(i))
+            Try
+                oTUPS.RemoveFromSchedule(oTUPS.GetScheduledTileNotifications(i))
+            Catch ex As Exception
+                ' healt stacktrace:
+                ' ZegarSloneczny::App.GetUpdaterClearQueue
+                ' System::Collections::Generic::IReadOnlyList_A__w_UI_Notifications_ScheduledTileNotification_V___Impl::Dispatcher.global::System.Collections.Generic.IReadOnlyList_Windows.UI.Notifications.ScheduledTileNotification_.get_Item
+                ' System::Runtime::InteropServices::WindowsRuntime::IVectorViewSharedReferenceTypesDynamicAdapter$1_System::__Canon_.get_Item$catch$0
+                ' wiec moze próba usunięcia czegoś co wlasnie weszlo jako aktualne i nie ma w kolejce
+            End Try
         Next
 
         If sXml IsNot Nothing Then
@@ -259,7 +267,13 @@ NotInheritable Class App
 
         If dHr > WschodZachod.GetZachod() Or dHr < WschodZachod.GetWschod() Then
             ' godziny nocne
-            dSun = 12 * (dHr - WschodZachod.GetZachod()) / dNoc
+
+            If dHr > WschodZachod.GetZachod() Then
+                dSun = 12 * (dHr - WschodZachod.GetZachod()) / dNoc
+            Else ' przed switem, hr=0..wschod
+                dSun = 12 - 12 * (WschodZachod.GetWschod() - dHr) / (dDzien)  ' PKAR: MINUS
+            End If
+
             dSecStep = d5SecN
             dSecStep1 = d5SecD
         Else

@@ -362,8 +362,11 @@ Public NotInheritable Class MainPage
         If hr > WschodZachod.GetZachod() Or hr < WschodZachod.GetWschod() Then
             ' godziny nocne
             dDzien = 24 - dDzien
-            GodzinaSloneczna = -12 * (hr - WschodZachod.GetZachod()) / (dDzien)  ' PKAR: MINUS
-            Exit Function
+            If hr > WschodZachod.GetZachod() Then
+                GodzinaSloneczna = -12 * (hr - WschodZachod.GetZachod()) / (dDzien)  ' PKAR: MINUS
+            Else ' przed switem, hr=0..wschod
+                GodzinaSloneczna = -12 + 12 * (WschodZachod.GetWschod() - hr) / (dDzien)  ' PKAR: MINUS
+            End If
         Else
             GodzinaSloneczna = 12 * (hr - WschodZachod.GetWschod()) / (dDzien)
         End If
