@@ -5,7 +5,7 @@
  Język polski: https://www.microsoft.com/pl-pl/p/r/9NXK70H40CF1
 
 # Privacy policy
- http://beskid.geo.uj.edu.pl/p/ms/sundial-privacy.htm
+ https://github.com/pkar70/ZegarSloneczny/wiki/Privacy-policy
 
  This is my first UWP app, from year 2017.
 
