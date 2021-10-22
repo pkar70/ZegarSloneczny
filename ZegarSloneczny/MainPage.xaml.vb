@@ -1,8 +1,8 @@
-﻿' The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
+﻿' 2019.06.14: TodayInfo, pokazywanie hh:mm ("05" minut a nie "5")
+' 2019.06.29: strona settings pokazuje numer wersji
 
 Imports Windows.ApplicationModel.Background
 Imports Windows.UI.Xaml.Shapes
-Imports ZegarSloneczny
 
 ''' <summary>
 ''' An empty page that can be used on its own or navigated to within a Frame.
@@ -11,10 +11,10 @@ Public NotInheritable Class MainPage
     Inherits Page
 
     ' setup
-    Dim m_SetDiameter = 0.7    ' ile wysokosci idzie na cień
+    Dim m_SetDiameter As Double = 0.7    ' ile wysokosci idzie na cień
     Dim m_SetPustyLuk As Double = 30    ' 30 stopni pustego kąta
 
-    Dim m_GnomonFi = 6      ' srednica gnomonu (kolka)
+    Dim m_GnomonFi As Double = 6      ' srednica gnomonu (kolka)
 
     Dim m_LukGodziny, m_PustyLuk As Double
     Dim m_RootX, m_RootY, m_Diameter As Integer
@@ -275,6 +275,10 @@ Public NotInheritable Class MainPage
         Me.Frame.Navigate(GetType(InfoAbout))
     End Sub
 
+    Private Sub uiCalculate_Click(sender As Object, e As RoutedEventArgs)
+        Me.Frame.Navigate(GetType(Calculate))
+    End Sub
+
     Private Sub bTodayInfo_Click(sender As Object, e As RoutedEventArgs)
         Me.Frame.Navigate(GetType(TodayInfo))
     End Sub
@@ -352,8 +356,7 @@ Public NotInheritable Class MainPage
         Dim dDzien As Double
         Dim WschodZachod As WschodZachodHelp
 
-        WschodZachod = New WschodZachodHelp(DateTime.UtcNow,
-             App.GetSettingsDouble("latitude"), App.GetSettingsDouble("longitude"), App.GetSettingsInt("dusk"))
+        WschodZachod = New WschodZachodHelp()
 
         dDzien = WschodZachod.GetZachod() - WschodZachod.GetWschod()
 
@@ -374,77 +377,3 @@ Public NotInheritable Class MainPage
     End Function
 End Class
 
-Public Class WschodZachodHelp
-    Dim m_Date As Date
-    Dim m_Lat, m_Long As Double
-    Dim m_ZegarTyp As Integer
-
-    Sub New(ByVal dData As DateTime, ByVal dLat As Integer, ByVal dLong As Integer, ByVal dTyp As Integer)
-        m_Date = dData
-        m_ZegarTyp = dTyp
-        If dTyp < 0 Or dTyp > 3 Then m_ZegarTyp = 0
-        m_Lat = dLat
-        m_Long = dLong
-    End Sub
-
-    Private Function GetTypZegara() As Single
-        ' algorytmy zegarowe wedlug
-        ' http://cybermoon.w.interia.pl/wiedza/algorithms/wschody_slonca.html
-        Select Case m_ZegarTyp
-            Case 1  ' cywilny civil (srodek tarczy 6° ponizej horyzontu)
-                Return -6
-            Case 2  ' morski (żeglarski) nautical
-                Return -12
-            Case 3  ' astronomiczny astronomical
-                Return -18
-            Case Else   'zach? normal (refrakcja)
-                Return -0.833
-        End Select
-
-    End Function
-    Public Function GetWschod() As Double
-        Return (System.Math.PI - (ZegarE() + 0.017453293 * m_Long + 1 * System.Math.Acos(ZegarC()))) * 57.29577951 / 15
-    End Function
-    Public Function GetPoludnie() As Double
-        Return (System.Math.PI - (ZegarE() + 0.017453293 * m_Long + 0 * System.Math.Acos(ZegarC()))) * 57.29577951 / 15
-    End Function
-
-    Public Function GetZachod() As Double
-        Return (System.Math.PI - (ZegarE() + 0.017453293 * m_Long - 1 * System.Math.Acos(ZegarC()))) * 57.29577951 / 15
-    End Function
-
-    Private Function ZegarJ() As Double
-        Return 367 * m_Date.Year -
-            CInt(7 * (m_Date.Year + CInt((m_Date.Month + 9) / 12)) / 4) +
-            CInt(275 * m_Date.Month / 9) +
-            m_Date.Day - 730531.5
-    End Function
-    Private Function ZegarCent() As Double
-        Return (ZegarJ() / 36525)
-    End Function
-    Private Function ZegarL() As Double
-        Return (4.8949504201433 + 628.331969753199 * ZegarCent()) Mod 6.28318530718
-    End Function
-    Private Function ZegarG() As Double
-        Return (6.2400408 + 628.3019501 * ZegarCent()) Mod 6.28318530718
-    End Function
-    Private Function ZegarO() As Double
-        Return 0.409093 - (0.0002269 * ZegarCent())
-    End Function
-
-    Private Function ZegarF() As Double
-        Return 0.033423 * Math.Sin(ZegarG()) + 0.00034907 * Math.Sin(2 * ZegarG())
-    End Function
-    Private Function ZegarE() As Double
-        Return 0.0430398 * Math.Sin(2 * (ZegarL() + ZegarF())) - 0.00092502 * Math.Sin(4 * (ZegarL() + ZegarF())) - ZegarF()
-    End Function
-
-    Private Function ZegarA() As Double
-        Return Math.Asin(System.Math.Sin(ZegarO()) * Math.Sin(ZegarL() + ZegarF()))
-    End Function
-    Private Function ZegarC() As Double
-        Return (Math.Sin(0.017453293 * GetTypZegara()) - Math.Sin(0.017453293 * m_Lat) * System.Math.Sin(ZegarA())) /
-        (Math.Cos(0.017453293 * m_Lat) * Math.Cos(ZegarA()))
-    End Function
-
-End Class

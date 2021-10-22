@@ -158,12 +158,15 @@ NotInheritable Class App
     End Sub
 
     Public Shared Function GetUpdaterClearQueue(sName As String, bCommon As Boolean, sXml As String) As TileUpdater
-        Dim oTile As TileNotification
+        Dim oTile As TileNotification = Nothing
 
         If sXml IsNot Nothing Then
-            Dim oXml As New XmlDocument
-            oXml.LoadXml(sXml)
-            oTile = New Windows.UI.Notifications.TileNotification(oXml)
+            Try ' 20181227: skoro sa jakies STOWED z OnBackGroundActivated, to moze tu?
+                Dim oXml As XmlDocument = New XmlDocument
+                oXml.LoadXml(sXml)
+                oTile = New Windows.UI.Notifications.TileNotification(oXml)
+            Catch ex As Exception
+            End Try
         End If
 
         Dim oTUPS As TileUpdater
@@ -174,7 +177,7 @@ NotInheritable Class App
         End If
 
         oTUPS.Clear()
-        For i = oTUPS.GetScheduledTileNotifications.Count - 1 To 0 Step -1
+        For i As Integer = oTUPS.GetScheduledTileNotifications.Count - 1 To 0 Step -1
             Try
                 oTUPS.RemoveFromSchedule(oTUPS.GetScheduledTileNotifications(i))
             Catch ex As Exception
@@ -186,7 +189,7 @@ NotInheritable Class App
             End Try
         Next
 
-        If sXml IsNot Nothing Then
+        If oTile IsNot Nothing Then ' 20181227: warunek byl na sXML - teraz lepiej na oTile
             oTUPS.Update(oTile)
         End If
         Return oTUPS
@@ -195,7 +198,7 @@ NotInheritable Class App
     Private Shared Function SecTileUpdateDigTarcza(iHr As Integer, iMin As Integer, b24 As Boolean) As String
         Dim sTmp As String
         If Not b24 Then If iHr > 12 Then iHr = iHr - 12
-        Dim sHr = iHr.ToString & ":" & iMin.ToString("d2")
+        Dim sHr As String = iHr.ToString & ":" & iMin.ToString("d2")
 
         sTmp = "<tile><visual>"
 
@@ -230,11 +233,11 @@ NotInheritable Class App
         Dim oTUPS As TileUpdater = GetUpdaterClearQueue("SunDialDig", bCommon, sXml)
         Dim oXml As New XmlDocument
 
-        For i = 1 To 90    ' 1.5h, a timer jest co godzine
+        For i As Integer = 1 To 90    ' 1.5h, a timer jest co godzine
             oDate = oDate.AddMinutes(1)
             sXml = SecTileUpdateDigTarcza(oDate.Hour, oDate.Minute, App.GetSettingsBool("uiPinDig24", Globalization.CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.IndexOf("H") > -1))
             oXml.LoadXml(sXml)
-            Dim oSchST = New ScheduledTileNotification(oXml, oDate)
+            Dim oSchST As ScheduledTileNotification = New ScheduledTileNotification(oXml, oDate)
             If i = 90 Then oSchST.ExpirationTime = oDate.AddMinutes(2)  ' wygas, nawet jak nie bedzie aktualizacji
             oTUPS.AddToSchedule(oSchST)
         Next
@@ -245,8 +248,7 @@ NotInheritable Class App
 
         EnsureSunTarczaExist(False)
 
-        WschodZachod = New WschodZachodHelp(DateTime.UtcNow,
-             App.GetSettingsDouble("latitude"), App.GetSettingsDouble("longitude"), App.GetSettingsInt("dusk"))
+        WschodZachod = New WschodZachodHelp()
 
         Dim dDzien, dNoc, dSun As Double
 
@@ -295,20 +297,20 @@ NotInheritable Class App
         iSunMin = iSunMin - (iSunMin Mod 5)         ' ucinamy na poczatek 5 minutowego fragmentu
 
         Dim oTUPS As TileUpdater = GetUpdaterClearQueue("SunDialSun", bCommon, Nothing)
-        Dim oXml As New XmlDocument
+        Dim oXml As XmlDocument = New XmlDocument
         Dim sXml As String
 
         ' krok petli, 5 minut slonecznych w przeliczeniu na sekundy ścienne
 
         Dim oDate As Date = Date.Now.AddMinutes(1)
 
-        For i = 0 To 90 Step 5  ' na 90 minut zrob ikonki
+        For i As Integer = 0 To 90 Step 5  ' na 90 minut zrob ikonki
             ' dHr = aktualny czas scienny
             sXml = SecTileUpdateSunTarcza(iSunHr, iSunMin)
 
             oXml.LoadXml(sXml)
 
-            Dim oSchST = New ScheduledTileNotification(oXml, oDate)
+            Dim oSchST As ScheduledTileNotification = New ScheduledTileNotification(oXml, oDate)
 
             If i = 90 Then
                 oSchST.ExpirationTime = oDate.AddMinutes(10)  ' wygas, nawet jak nie bedzie aktualizacji
@@ -335,8 +337,8 @@ NotInheritable Class App
     Public Shared Async Sub EnsureAnaTarczaExist(bMsg As Boolean)
 
         ' check if file exist
-        Dim oFolderP = Await ApplicationData.Current.LocalFolder.CreateFolderAsync("pic", CreationCollisionOption.OpenIfExists)
-        Dim oFolder = Await oFolderP.CreateFolderAsync("a", CreationCollisionOption.OpenIfExists)
+        Dim oFolderP As StorageFolder = Await ApplicationData.Current.LocalFolder.CreateFolderAsync("pic", CreationCollisionOption.OpenIfExists)
+        Dim oFolder As StorageFolder = Await oFolderP.CreateFolderAsync("a", CreationCollisionOption.OpenIfExists)
         If Await oFolder.TryGetItemAsync("null.png") IsNot Nothing Then Exit Sub
         If Await oFolder.TryGetItemAsync("0000.png") IsNot Nothing Then Exit Sub
         ' 1159 - wtedy wylatuje na errorze, bo w dwu watkach zaczyna tworzyc pliki
@@ -346,14 +348,14 @@ NotInheritable Class App
         ' dokumentacja
         ' http://microsoft.github.io/Win2D/html/Introduction.htm
 
-        Dim oDevice = CanvasDevice.GetSharedDevice()
+        Dim oDevice As CanvasDevice = CanvasDevice.GetSharedDevice()
 
 
         ' 1. rysowanie tarczy (wspólne)
         ' 200x200 pokazuje za mało (jest crop), robimy 150 - ale z bckgrnd moze jest inaczej
-        Dim oTarczaTlo = New CanvasRenderTarget(oDevice, 200, 200, 96)
+        Dim oTarczaTlo As CanvasRenderTarget = New CanvasRenderTarget(oDevice, 200, 200, 96)
 
-        Dim ds = oTarczaTlo.CreateDrawingSession
+        Dim ds As CanvasDrawingSession = oTarczaTlo.CreateDrawingSession
 
         ds.Clear(Colors.Transparent)
 
@@ -362,10 +364,10 @@ NotInheritable Class App
         Dim iGrub, iLen As Integer
         Dim ny, nx, nx1, ny1 As Integer
 
-        Dim dLuMinutowy = 6 * Math.PI / 180
-        Dim dLukGodzinny = 30 * Math.PI / 180
+        Dim dLuMinutowy As Double = 6 * Math.PI / 180
+        Dim dLukGodzinny As Double = 30 * Math.PI / 180
 
-        For i = 1 To 60
+        For i As Integer = 1 To 60
             iGrub = 2
             iLen = 10
 
@@ -392,13 +394,13 @@ NotInheritable Class App
 
         ds.Dispose()
 
-        Dim oFilePicN = Await oFolder.CreateFileAsync("null.png", CreationCollisionOption.ReplaceExisting)
+        Dim oFilePicN As StorageFile = Await oFolder.CreateFileAsync("null.png", CreationCollisionOption.ReplaceExisting)
         Await oTarczaTlo.SaveAsync(oFilePicN.Path)
 
         ' 2. dodawanie wskazówek
-        For iHr = 0 To 11
-            For iMin = 0 To 59
-                Dim oTarcza = New CanvasRenderTarget(oDevice, 200, 200, 96)
+        For iHr As Integer = 0 To 11
+            For iMin As Integer = 0 To 59
+                Dim oTarcza As CanvasRenderTarget = New CanvasRenderTarget(oDevice, 200, 200, 96)
                 ds = oTarcza.CreateDrawingSession
                 ds.Clear(Colors.Transparent)
                 ds.DrawImage(oTarczaTlo)
@@ -427,7 +429,7 @@ NotInheritable Class App
 
                 ds.Dispose()
 
-                Dim oFilePic = Await oFolder.CreateFileAsync(
+                Dim oFilePic As StorageFile = Await oFolder.CreateFileAsync(
                         iHr.ToString("d2") & iMin.ToString("d2") & ".png", CreationCollisionOption.ReplaceExisting)
                 Await oTarcza.SaveAsync(oFilePic.Path)
 
@@ -442,23 +444,23 @@ NotInheritable Class App
     Public Shared Async Sub EnsureSunTarczaExist(bMsg As Boolean)
 
         ' check if file exist
-        Dim oFolderP = Await ApplicationData.Current.LocalFolder.CreateFolderAsync("pic", CreationCollisionOption.OpenIfExists)
-        Dim oFolder = Await oFolderP.CreateFolderAsync("s", CreationCollisionOption.OpenIfExists)
+        Dim oFolderP As StorageFolder = Await ApplicationData.Current.LocalFolder.CreateFolderAsync("pic", CreationCollisionOption.OpenIfExists)
+        Dim oFolder As StorageFolder = Await oFolderP.CreateFolderAsync("s", CreationCollisionOption.OpenIfExists)
         If Await oFolder.TryGetItemAsync("null.png") IsNot Nothing Then Exit Sub
         If Await oFolder.TryGetItemAsync("0000.png") IsNot Nothing Then Exit Sub
 
         'If GetSettingsBool("inCreatingSunTarcza") Then Exit Sub
         'SetSettingsBool("inCreatingSunTarcza", True)
 
-        Dim m_SetDiameter = 0.65    ' ile wysokosci idzie na cień
+        Dim m_SetDiameter As Double = 0.65    ' ile wysokosci idzie na cień
         Dim m_SetPustyLuk As Double = 45    ' 30 stopni pustego kąta
-        Dim m_MoveBottom = 10
+        Dim m_MoveBottom As Double = 10
 
-        Dim oDevice = CanvasDevice.GetSharedDevice()
+        Dim oDevice As CanvasDevice = CanvasDevice.GetSharedDevice()
         ' 1. rysowanie tarczy (część wspólna)
-        Dim oTarczaTlo = New CanvasRenderTarget(oDevice, 200, 200, 96)
+        Dim oTarczaTlo As CanvasRenderTarget = New CanvasRenderTarget(oDevice, 200, 200, 96)
 
-        Dim ds = oTarczaTlo.CreateDrawingSession
+        Dim ds As CanvasDrawingSession = oTarczaTlo.CreateDrawingSession
         ds.Clear(Colors.Transparent)
 
         ' gnomon
@@ -466,7 +468,7 @@ NotInheritable Class App
 
         Dim m_PustyLuk As Double = Math.PI / (180 / m_SetPustyLuk)
         Dim m_LukGodziny As Double = Math.PI / (180 / ((180 - 2 * m_SetPustyLuk) / 12))
-        Dim m_Diameter = 200 * m_SetDiameter
+        Dim m_Diameter As Double = 200 * m_SetDiameter
 
         Dim nx, ny, nx1, ny1, iGrub As Integer
         For i As Integer = 0 To 12
@@ -494,14 +496,14 @@ NotInheritable Class App
 
         ds.Dispose()
 
-        Dim oFilePicN = Await oFolder.CreateFileAsync("null.png", CreationCollisionOption.ReplaceExisting)
+        Dim oFilePicN As StorageFile = Await oFolder.CreateFileAsync("null.png", CreationCollisionOption.ReplaceExisting)
         Await oTarczaTlo.SaveAsync(oFilePicN.Path)
 
         ' 2. rysowanie cienia - wersja pozioma (0 po prawej stronie)
         Dim dAngle As Double
-        For iHr = 0 To 11
-            For iMin = 0 To 59 Step 5   ' dokladność 5 minut - musza byc symetryczne, tj. 5 i 55 (bo odbicie lustrzane przy zmianie polozenia)
-                Dim oTarcza = New CanvasRenderTarget(oDevice, 200, 200, 96)
+        For iHr As Integer = 0 To 11
+            For iMin As Integer = 0 To 59 Step 5   ' dokladność 5 minut - musza byc symetryczne, tj. 5 i 55 (bo odbicie lustrzane przy zmianie polozenia)
+                Dim oTarcza As CanvasRenderTarget = New CanvasRenderTarget(oDevice, 200, 200, 96)
                 ds = oTarcza.CreateDrawingSession
                 ds.Clear(Colors.Transparent)
                 ds.DrawImage(oTarczaTlo)
@@ -514,7 +516,7 @@ NotInheritable Class App
 
                 ds.Dispose()
 
-                Dim oFilePic = Await oFolder.CreateFileAsync(
+                Dim oFilePic As StorageFile = Await oFolder.CreateFileAsync(
                         iHr.ToString("d2") & iMin.ToString("d2") & ".png", CreationCollisionOption.ReplaceExisting)
                 Await oTarcza.SaveAsync(oFilePic.Path)
 
@@ -600,10 +602,10 @@ NotInheritable Class App
         Dim oXml As New XmlDocument
 
         oDate = oDate.AddMinutes(1)
-        For i = 1 To 90    ' 1.5h, a timer jest co godzine
+        For i As Integer = 1 To 90    ' 1.5h, a timer jest co godzine
             sXml = SecTileUpdateAnaTarcza(oDate.Hour, oDate.Minute)
             oXml.LoadXml(sXml)
-            Dim oSchST = New ScheduledTileNotification(oXml, oDate)
+            Dim oSchST As ScheduledTileNotification = New ScheduledTileNotification(oXml, oDate)
             oDate = oDate.AddMinutes(1)
             ' If i = 90 Then oSchST.ExpirationTime = oDate.AddMinutes(2)  ' wygas, nawet jak nie bedzie aktualizacji
             oSchST.ExpirationTime = oDate
@@ -615,7 +617,7 @@ NotInheritable Class App
         Dim sTmpH, sTmpM, sPic, sTmp As String
         If Not b24 Then If iHr > 12 Then iHr = iHr - 12
 
-        Dim sHr = iHr.ToString("d2")
+        Dim sHr As String = iHr.ToString("d2")
 
         sTmpH = "<subgroup hint-weight='40'><image src='pic\b\"
         If b24 Then
@@ -667,11 +669,11 @@ NotInheritable Class App
         Dim oTUPS As TileUpdater = GetUpdaterClearQueue("SunDialBin", bCommon, sXml)
         Dim oXml As New XmlDocument
 
-        For i = 1 To 90    ' 1.5h, a timer jest co godzine
+        For i As Integer = 1 To 90    ' 1.5h, a timer jest co godzine
             oDate = oDate.AddMinutes(1)
             sXml = SecTileUpdateBinTarcza(oDate.Hour, oDate.Minute, App.GetSettingsBool("uiPinBin24", Globalization.CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.IndexOf("H") > -1))
             oXml.LoadXml(sXml)
-            Dim oSchST = New ScheduledTileNotification(oXml, oDate)
+            Dim oSchST As ScheduledTileNotification = New ScheduledTileNotification(oXml, oDate)
             If i = 90 Then oSchST.ExpirationTime = oDate.AddMinutes(2)  ' wygas, nawet jak nie bedzie aktualizacji
             oTUPS.AddToSchedule(oSchST)
         Next
@@ -681,7 +683,7 @@ NotInheritable Class App
         Dim sTmpH, sTmpM, sPic, sTmp As String
         If Not b24 Then If iHr > 12 Then iHr = iHr - 12
 
-        Dim sHr = iHr.ToString("d2")
+        Dim sHr As String = iHr.ToString("d2")
         If sHr.Substring(0, 1) = "0" Then
             sTmpH = "<subgroup hint-weight='40'><image src='pic\7\Null.png' /></subgroup>" ' pusty, a nie zero!
         Else
@@ -731,11 +733,11 @@ NotInheritable Class App
         Dim oTUPS As TileUpdater = GetUpdaterClearQueue("SunDialSsg", bCommon, sXml)
         Dim oXml As New XmlDocument
 
-        For i = 1 To 90    ' 1.5h, a timer jest co godzine
+        For i As Integer = 1 To 90    ' 1.5h, a timer jest co godzine
             oDate = oDate.AddMinutes(1)
             sXml = SecTileUpdateSsgTarcza(oDate.Hour, oDate.Minute, App.GetSettingsBool("uiPinSsg24", Globalization.CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.IndexOf("H") > -1))
             oXml.LoadXml(sXml)
-            Dim oSchST = New ScheduledTileNotification(oXml, oDate)
+            Dim oSchST As ScheduledTileNotification = New ScheduledTileNotification(oXml, oDate)
             If i = 90 Then oSchST.ExpirationTime = oDate.AddMinutes(2)  ' wygas, nawet jak nie bedzie aktualizacji
             oTUPS.AddToSchedule(oSchST)
         Next
@@ -753,6 +755,7 @@ NotInheritable Class App
         'if analogicznie do glownej tile
     End Sub
 
+#If False Then
     Public Shared Async Sub PriTileUpdate()
         '' rysowanie main Tile - z timer
 
@@ -788,12 +791,13 @@ NotInheritable Class App
         'End If
 
     End Sub
+
     Private Shared Sub DelNearestUpdate(iSec As Integer)
-        Dim oTUPS = TileUpdateManager.CreateTileUpdaterForApplication()
+        Dim oTUPS As TileUpdater = TileUpdateManager.CreateTileUpdaterForApplication()
         Dim oDate As Date = Date.Now
         oDate.AddSeconds(iSec)
 
-        For i = oTUPS.GetScheduledTileNotifications.Count - 1 To 0 Step -1
+        For i As Integer = oTUPS.GetScheduledTileNotifications.Count - 1 To 0 Step -1
             If oTUPS.GetScheduledTileNotifications.Item(i).DeliveryTime < oDate Then
                 oTUPS.RemoveFromSchedule(oTUPS.GetScheduledTileNotifications(i))
             End If
@@ -879,6 +883,7 @@ NotInheritable Class App
 
         Return True
     End Function
+#End If
 
     Protected Overrides Sub OnBackgroundActivated(args As BackgroundActivatedEventArgs)
         SecTileUpdate()

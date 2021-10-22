@@ -8,8 +8,17 @@ Public NotInheritable Class TodayInfo
     Inherits Page
 
     Private Sub Today_Loaded(sender As Object, e As RoutedEventArgs)
-        ebLong.Text = App.GetSettingsDouble("longitude").ToString.Substring(0, Math.Min(8, App.GetSettingsDouble("longitude").ToString.Length))
-        ebLat.Text = App.GetSettingsDouble("latitude").ToString.Substring(0, Math.Min(8, App.GetSettingsDouble("longitude").ToString.Length))
+        ' try/catch, bo error 14 V 2018, v 2.1.1.1000 (ja takiej nie robiłem!), hardware Alienware X51, Win 10.0.16299.431 
+        Try
+            ebLong.Text = App.GetSettingsDouble("longitude").ToString.Substring(0, Math.Min(8, App.GetSettingsDouble("longitude").ToString.Length))
+        Catch ex As Exception
+            ebLong.Text = "0"
+        End Try
+        Try
+            ebLat.Text = App.GetSettingsDouble("latitude").ToString.Substring(0, Math.Min(8, App.GetSettingsDouble("longitude").ToString.Length))
+        Catch ex As Exception
+            ebLat.Text = "0"
+        End Try
         uiTodayData.Date = Date.Now
         Przelicz()
     End Sub
@@ -60,7 +69,11 @@ Public NotInheritable Class TodayInfo
             iInd = 0
         End If
 
-        Hr2Txt = iInd.ToString & ":" & CInt((dLen - iInd) * 60).ToString
+        Hr2Txt = iInd.ToString & ":"
+        ' 20190614: dopisywanie zera, żeby minuty były "05" a nie "5"
+        Dim iMin As Integer = (dLen - iInd) * 60
+        If iMin < 10 Then Hr2Txt &= "0"
+        Hr2Txt &= iMin
 
     End Function
 

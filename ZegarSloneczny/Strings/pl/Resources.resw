@@ -273,4 +273,19 @@
   <data name="resCreatingTarcza" xml:space="preserve">
     <value>Poczekaj chwilkę, tworzę tarcze zegarowe...</value>
   </data>
+  <data name="uiCalculate.Label" xml:space="preserve">
+    <value>Przelicz</value>
+  </data>
+  <data name="uiCalcTitle.Text" xml:space="preserve">
+    <value>Kalkulator</value>
+  </data>
+  <data name="uiCivilTime.Header" xml:space="preserve">
+    <value>Czas oficjalny</value>
+  </data>
+  <data name="uiSunDescr.Text" xml:space="preserve">
+    <value>(użyj AM dla dnia, a PM dla nocy)</value>
+  </data>
+  <data name="uiSunTime.Header" xml:space="preserve">
+    <value>Czas słoneczny</value>
+  </data>
 </root>

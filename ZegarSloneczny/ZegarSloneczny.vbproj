@@ -10,7 +10,7 @@
     <AssemblyName>ZegarSloneczny</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
-    <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.15063.0</TargetPlatformVersion>
+    <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.17134.0</TargetPlatformVersion>
     <TargetPlatformMinVersion>10.0.14393.0</TargetPlatformMinVersion>
     <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
     <FileAlignment>512</FileAlignment>
@@ -18,11 +18,14 @@
     <WindowsXamlEnableOverview>true</WindowsXamlEnableOverview>
     <PackageCertificateKeyFile>ZegarSloneczny_StoreKey.pfx</PackageCertificateKeyFile>
     <RuntimeIdentifiers>win10-arm;win10-arm-aot;win10-x86;win10-x86-aot;win10-x64;win10-x64-aot</RuntimeIdentifiers>
-    <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
+    <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
     <AppxBundle>Always</AppxBundle>
     <AppxBundlePlatforms>x86|x64|arm</AppxBundlePlatforms>
     <AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
     <PackageCertificateThumbprint>F2ADDA30088C47BE6B0D238F89B8844066268F2C</PackageCertificateThumbprint>
+    <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
+    <AppInstallerUpdateFrequency>1</AppInstallerUpdateFrequency>
+    <AppInstallerCheckForUpdateFrequency>OnApplicationRun</AppInstallerCheckForUpdateFrequency>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -108,6 +111,9 @@
     <Compile Include="App.xaml.vb">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Calculate.xaml.vb">
+      <DependentUpon>Calculate.xaml</DependentUpon>
+    </Compile>
     <Compile Include="GlobalSuppressions.vb" />
     <Compile Include="InfoAbout.xaml.vb">
       <DependentUpon>InfoAbout.xaml</DependentUpon>
@@ -128,6 +134,7 @@
     <Compile Include="TodayInfo.xaml.vb">
       <DependentUpon>TodayInfo.xaml</DependentUpon>
     </Compile>
+    <Compile Include="WschodZachodHelp.vb" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -221,6 +228,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="Calculate.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="InfoAbout.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

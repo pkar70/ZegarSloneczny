@@ -273,4 +273,19 @@
   <data name="resCreatingTarcza" xml:space="preserve">
     <value>Please wait, creating clock images...</value>
   </data>
+  <data name="uiCalcTitle.Text" xml:space="preserve">
+    <value>Calculator</value>
+  </data>
+  <data name="uiCalculate.Label" xml:space="preserve">
+    <value>Convert</value>
+  </data>
+  <data name="uiCivilTime.Header" xml:space="preserve">
+    <value>Civil time</value>
+  </data>
+  <data name="uiSunDescr.Text" xml:space="preserve">
+    <value>(use AM as day, and PM as night)</value>
+  </data>
+  <data name="uiSunTime.Header" xml:space="preserve">
+    <value>Sun time</value>
+  </data>
 </root>

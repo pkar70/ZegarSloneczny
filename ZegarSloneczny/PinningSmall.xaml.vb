@@ -73,8 +73,8 @@ Public NotInheritable Class PinningSmall
 
     Private Async Function AddSecTile(sName As String) As Task(Of Boolean)
         SaveSettings()  ' uaktualnij zmienne, bo bedzie je wykorzystywal rysujac Tiles
-        Dim oSTile = New SecondaryTile(sName, sName, sName, New Uri("ms-appx:///pic/" & sName & ".png"), TileSize.Square150x150)
-        Dim isPinned = Await oSTile.RequestCreateAsync()
+        Dim oSTile As SecondaryTile = New SecondaryTile(sName, sName, sName, New Uri("ms-appx:///pic/" & sName & ".png"), TileSize.Square150x150)
+        Dim isPinned As Boolean = Await oSTile.RequestCreateAsync()
         Return isPinned
     End Function
     Private Async Sub uiDigital_Click(sender As Object, e As RoutedEventArgs)

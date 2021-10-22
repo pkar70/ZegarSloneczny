@@ -18,6 +18,7 @@
     <Page.BottomAppBar>
         <CommandBar ClosedDisplayMode="Minimal">
             <AppBarButton x:Uid="resTodayInfo" Icon="Clock" Label="Today" Click="bTodayInfo_Click" />
+            <AppBarButton x:Uid="uiCalculate" Icon="Calculator" Label="Policz" Click="uiCalculate_Click" />
             <AppBarButton Icon="Setting" Label="Settings" Click="bSetup_Click"/>
             <AppBarButton Icon="Help" Label="Info" Click="bInfo_Click" />
         </CommandBar>

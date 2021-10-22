@@ -15,11 +15,11 @@ Public NotInheritable Class Setup
 
         Dim dTmp As Double
         If Double.TryParse(ebLat.Text, dTmp) Then
-            If dTmp >= -90 And dTmp <= 90 Then App.SetSettingsDouble("latitude", dTmp)
+            If dTmp >= -90 AndAlso dTmp <= 90 Then App.SetSettingsDouble("latitude", dTmp)
         End If
 
         If Double.TryParse(ebLong.Text, dTmp) Then
-            If dTmp >= -180 And dTmp <= 180 Then App.SetSettingsDouble("longitude", dTmp)
+            If dTmp >= -180 AndAlso dTmp <= 180 Then App.SetSettingsDouble("longitude", dTmp)
         End If
 
         Me.Frame.Navigate(GetType(MainPage))
@@ -33,6 +33,10 @@ Public NotInheritable Class Setup
         If ebLat.Text.Length > 8 Then ebLat.Text = ebLat.Text.Substring(0, 8)
         ebLong.Text = App.GetSettingsDouble("longitude").ToString
         If ebLong.Text.Length > 8 Then ebLong.Text = ebLong.Text.Substring(0, 8)
+
+        uiVersion.Text = "v. " & Package.Current.Id.Version.Major & "." &
+            Package.Current.Id.Version.Minor & "." & Package.Current.Id.Version.Build
+
     End Sub
 
     Private Async Sub bGetGPS_Click(sender As Object, e As RoutedEventArgs)
