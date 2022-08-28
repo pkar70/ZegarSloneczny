@@ -1,4 +1,7 @@
-﻿' 2019.06.14: TodayInfo, pokazywanie hh:mm ("05" minut a nie "5")
+﻿
+' 2022.01.07: TODO: najdluzszy i najkrotszy dzien, i jak sie do tego ma aktualny?
+
+' 2019.06.14: TodayInfo, pokazywanie hh:mm ("05" minut a nie "5")
 ' 2019.06.29: strona settings pokazuje numer wersji
 
 Imports Windows.ApplicationModel.Background

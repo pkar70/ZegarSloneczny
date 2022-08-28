@@ -222,6 +222,9 @@
     <Content Include="pic\SunDialSsg.png" />
     <Content Include="pic\SunDialSun.png" />
     <None Include="Package.StoreAssociation.xml" />
+    <None Include="$(MSBuildThisFileDirectory)_changes.txt" />
+    <None Include="$(MSBuildThisFileDirectory)_tudus.txt" />
+
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
